@@ -146,7 +146,13 @@ td.r,th.r{text-align:right; padding-right:0}
 .coche:last-child{border-bottom:0}
 .coche input{width:19px; height:19px; flex:0 0 19px; margin-top:1px; accent-color:var(--eau)}
 .coche span{flex:1}
-.coche.fait span{color:var(--encre-pale); text-decoration:line-through}
+.art{border-bottom:1px solid #EDF3F2}
+.art:last-child{border-bottom:0}
+.art.fait .coche span{color:var(--encre-pale)}
+.art .coche{border-bottom:0}
+.prix{display:grid; grid-template-columns:96px 1fr; gap:6px; padding:0 0 9px 28px; align-items:center}
+.prix input{padding:6px 8px; font-size:13px}
+.prix .po{grid-column:1 / -1; font-size:11.5px; color:var(--encre-pale)}
 .etape{padding:9px 0; border-bottom:1px solid var(--trait)}
 .etape:last-child{border-bottom:0}
 .etape .t{display:flex; gap:9px; align-items:flex-start}
@@ -315,14 +321,14 @@ nav button.on{color:var(--eau); box-shadow:inset 0 2px 0 var(--eau)}
   <div class="carte">
     <div class="champ"><label for="pDate">Date du relevé</label><input type="date" id="pDate"></div>
     <div class="trois">
-      <div class="champ"><label for="pPh">pH</label><input type="number" step="0.1" id="pPh" placeholder="7,2"></div>
-      <div class="champ"><label for="pGh">GH °d</label><input type="number" step="0.5" id="pGh" placeholder="7"></div>
-      <div class="champ"><label for="pKh">KH °d</label><input type="number" step="0.5" id="pKh" placeholder="4"></div>
+      <div class="champ"><label for="pPh">pH</label><input type="text" inputmode="decimal" id="pPh" placeholder="7,2"></div>
+      <div class="champ"><label for="pGh">GH °d</label><input type="text" inputmode="decimal" id="pGh" placeholder="7"></div>
+      <div class="champ"><label for="pKh">KH °d</label><input type="text" inputmode="decimal" id="pKh" placeholder="4"></div>
     </div>
     <div class="trois">
-      <div class="champ"><label for="pNo2">NO2 mg/L</label><input type="number" step="0.01" id="pNo2" placeholder="0"></div>
-      <div class="champ"><label for="pNo3">NO3 mg/L</label><input type="number" step="1" id="pNo3" placeholder="10"></div>
-      <div class="champ"><label for="pTemp">T° °C</label><input type="number" step="0.1" id="pTemp" placeholder="25"></div>
+      <div class="champ"><label for="pNo2">NO2 mg/L</label><input type="text" inputmode="decimal" id="pNo2" placeholder="0"></div>
+      <div class="champ"><label for="pNo3">NO3 mg/L</label><input type="text" inputmode="decimal" id="pNo3" placeholder="10"></div>
+      <div class="champ"><label for="pTemp">T° °C</label><input type="text" inputmode="decimal" id="pTemp" placeholder="25"></div>
     </div>
     <div class="champ"><label for="pEau">Changement d'eau ce jour</label>
       <select id="pEau"><option value="0">Non</option><option value="45">Oui — 45 L (30 %)</option><option value="30">Oui — 30 L (20 %)</option><option value="60">Oui — 60 L (40 %)</option></select></div>
@@ -376,7 +382,7 @@ nav button.on{color:var(--eau); box-shadow:inset 0 2px 0 var(--eau)}
     <div class="carte">
       <div class="deux">
         <div class="champ"><label for="dDate">Date</label><input type="date" id="dDate"></div>
-        <div class="champ"><label for="dMontant">Montant (€)</label><input type="number" step="0.01" id="dMontant" placeholder="0,00"></div>
+        <div class="champ"><label for="dMontant">Montant (€)</label><input type="text" inputmode="decimal" id="dMontant" placeholder="0,00"></div>
       </div>
       <div class="champ"><label for="dArticle">Article</label><input id="dArticle" placeholder="Sansibar River 10 kg"></div>
       <div class="deux">
@@ -2646,6 +2652,22 @@ const CHALEUR  = [["<b>Jusqu'à 27 °C</b>", "Rien d'anormal. Les poissons sont 
 const SECURITE = [{"id": "s01", "html": "<b>La boucle d'égouttement, sur chaque câble.</b> Le fil doit descendre plus bas que la prise avant d'y remonter : l'eau qui coulerait le long du câble tombe au sol au point bas au lieu d'entrer dans la prise. C'est la précaution la plus importante de la liste, et elle est gratuite."}, {"id": "s02", "html": "<b>Multiprise avec interrupteur</b>, fixée au flanc ou au dos du meuble, jamais posée à plat sur le fond."}, {"id": "s03", "html": "Vérifiez au tableau que le circuit est protégé par un <b>différentiel 30 mA</b>."}, {"id": "s04", "html": "<b>Le programmateur ne pilote que la rampe LED.</b> Ni le filtre ni le chauffage, qui doivent tourner en continu."}, {"id": "s05", "html": "<b>Le chauffage ne se branche jamais hors de l'eau.</b> Sur le Rio il est logé dans le boîtier du filtre : débranchez-le au début du changement d'eau, rebranchez une fois le niveau remonté."}, {"id": "s06", "html": "Avant toute intervention un peu longue les mains dans l'eau, coupez la multiprise."}, {"id": "s07", "html": "<b>Le sol doit être plan.</b> Une cale sous un angle du meuble concentre la contrainte sur un point de la vitre inférieure : c'est ainsi que les bacs cassent. Vérifiez au niveau à bulle avant de remplir, dans les deux sens."}, {"id": "s08", "html": "Sur un plancher bois, orientez le meuble perpendiculairement aux solives et, dans le doute, contre un mur porteur."}, {"id": "s09", "html": "<b>Remplissez en deux temps :</b> un tiers, puis vérification du niveau et de l'absence de suintement aux angles, puis le reste. Une fois plein, le bac ne se déplace plus, même de quelques centimètres."}, {"id": "s10", "html": "Un <b>détecteur de fuite d'eau</b> à quelques euros, posé dans le meuble, prévient d'un débordement de siphonnage."}, {"id": "s11", "html": "Contrôlez une fois par an les joints silicone intérieurs : un décollement se voit comme une ligne sombre le long de l'angle."}, {"id": "s12", "html": "<b>Prévenez votre assureur habitation.</b> La garantie dégâts des eaux couvre rarement d'office un aquarium de plus de 100 litres : un coup de fil règle la question."}];
 const EAU      = [{"id": "e1", "t": "Préparer l'eau neuve", "d": "Deux seaux de 15 L d'eau du robinet, conditionneur dosé sur le volume du seau, température à ± 2 °C de celle du bac."}, {"id": "e2", "t": "Couper le chauffage", "d": "Débrancher le chauffage et la pompe avant de descendre le niveau : ils ne doivent jamais tourner à l'air libre."}, {"id": "e3", "t": "Siphonner la zone dégagée", "d": "Effleurer le sable de la clairière sans y enfoncer la cloche, un tiers du sol par semaine."}, {"id": "e4", "t": "Contrôler le seau usagé", "d": "Regarder le fond du seau avant de le vider : les crevettes juvéniles s'y retrouvent souvent."}, {"id": "e5", "t": "Remplir doucement", "d": "Verser sur une assiette posée sur le sable pour ne pas creuser ni troubler."}, {"id": "e6", "t": "Rebrancher", "d": "Chauffage puis pompe, une fois le niveau revenu."}, {"id": "e7", "t": "Engrais liquide", "d": "ProFito après le changement d'eau, jamais avant."}];
 const KIT      = [["Cuve", "Rio 180 LED — 101 × 41 × 50 cm, 180 L bruts, environ 150 L d'eau réelle"], ["Éclairage", "MultiLux LED 100 — non réglable en intensité, d'où le programmateur sur 8 h"], ["Filtre", "Bioflow M interne, pompe Eccoflow 600 (600 L/h)"], ["Chauffage", "AquaHeat Pro 200, logé dans le filtre — d'où le thermomètre indépendant"], ["Poids en charge", "environ 250 kg une fois l'eau, le sable et les pierres en place"]];
+const POSTE_GROUPE = {
+  "CUVE ET DÉCOR":"Sol & décors",
+  "TECHNIQUE ET MESURE":"Technique & tests",
+  "PLANTES ET FIXATION":"Plantes & engrais",
+  "ENTRETIEN":"Outils d'entretien",
+  "NOURRITURE":"Alimentation",
+  "LE VIVANT — DANS CET ORDRE":"Le vivant"
+};
+function posteDe(groupe, texte){
+  if(/cuve|meuble/i.test(texte.replace(/<[^>]+>/g,""))) return "Aquarium + meuble";
+  return POSTE_GROUPE[groupe] || "Sol & décors";
+}
+function coche(id){
+  const v = D.courses[id];
+  return (v && typeof v === "object") ? v : (v ? {fait:true} : null);
+}
 const JALONS = [
   {sem:4,  cle:"Neocaridina"},
   {sem:5,  cle:"Amano"},
@@ -2691,11 +2713,16 @@ const $ = s => document.querySelector(s);
 const auj = () => new Date().toISOString().slice(0,10);
 function frDate(iso){ if(!iso) return "—"; const p = iso.split("-"); return p[2]+"/"+p[1]+"/"+p[0].slice(2); }
 function joursEntre(a,b){ return Math.round((new Date(b) - new Date(a)) / 86400000); }
+function nb(v){
+  if(v == null) return NaN;
+  const s = String(v).trim().replace(",", ".");
+  return s === "" ? NaN : Number(s);
+}
 function eur(n){ return (Math.round(n*100)/100).toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2}) + " €"; }
 function esc(t){ return String(t==null?"":t).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 function etat(s,v){
   if(v==null || v==="") return "nul";
-  const n = Number(v);
+  const n = nb(v);
   if(n < s.dur[0] || n > s.dur[1]) return "mal";
   if(n < s.min || n > s.max) return "att";
   return "ok";
@@ -2755,7 +2782,7 @@ function rendreBord(){
 
   $("#pastilles").innerHTML = SEUILS.map(s => {
     const v = r ? r[s.id] : null, e = etat(s,v);
-    const aff = (v==null || v==="") ? "—" : Number(v).toFixed(s.dec).replace(".", ",");
+    const aff = (v==null || v==="") ? "—" : nb(v).toFixed(s.dec).replace(".", ",");
     const cible = s.min === s.max ? s.min + " " + s.unite : s.min + "–" + s.max + " " + s.unite;
     return '<div class="p ' + e + '"><div class="lbl">' + s.nom + '</div><div class="val num">' + aff +
            '</div><div class="cible num">' + cible + "</div></div>";
@@ -2812,7 +2839,7 @@ $("#bAjoutParam").addEventListener("click", () => {
 });
 
 function courbe(s){
-  const pts = D.releves.filter(r => r[s.id] !== "" && r[s.id] != null).map(r => ({d:r.date, v:Number(r[s.id])}));
+  const pts = D.releves.filter(r => r[s.id] !== "" && r[s.id] != null).map(r => ({d:r.date, v:nb(r[s.id])}));
   if(pts.length < 2) return "";
   const L = 320, H = 62, m = 6;
   const vals = pts.map(p => p.v).concat([s.min, s.max]);
@@ -2842,7 +2869,7 @@ function rendreParam(){
     const cell = s => {
       const v = r[s.id];
       if(v === "" || v == null) return "—";
-      const t = Number(v).toFixed(s.dec).replace(".", ",");
+      const t = nb(v).toFixed(s.dec).replace(".", ",");
       return etat(s,v) === "ok" ? t : '<span class="hors">' + t + "</span>";
     };
     return "<tr><td class='num'>" + frDate(r.date) + "</td>" +
@@ -2887,7 +2914,14 @@ $("#bAjoutPop").addEventListener("click", () => {
 /* ---------- budget et courses ---------- */
 function rendreBudget(){
   const parPoste = {};
-  D.depenses.forEach(d => parPoste[d.poste] = (parPoste[d.poste]||0) + Number(d.montant));
+  D.depenses.forEach(d => parPoste[d.poste] = (parPoste[d.poste]||0) + nb(d.montant));
+  COURSES.forEach(g => g.items.forEach(it => {
+    const c = coche(it.id);
+    if(c && c.prix && isFinite(nb(c.prix))){
+      const p = posteDe(g.titre, it.html);
+      parPoste[p] = (parPoste[p]||0) + nb(c.prix);
+    }
+  }));
   let reel = 0, pmin = 0, pmax = 0;
   const corps = POSTES.map(p => {
     const r = parPoste[p.nom] || 0;
@@ -2919,18 +2953,25 @@ function rendreBudget(){
       }).join("") + "</table>"
     : '<p class="vide">Aucune dépense enregistrée.</p>';
 
-  let n = 0, tot = 0;
-  COURSES.forEach(g => g.items.forEach(it => { tot++; if(D.courses[it.id]) n++; }));
-  $("#avanceCourses").textContent = n + " article" + (n>1?"s":"") + " sur " + tot + " coché" + (n>1?"s":"");
+  let n = 0, tot = 0, achete = 0;
+  COURSES.forEach(g => g.items.forEach(it => { tot++; const c = coche(it.id); if(c){ n++; if(c.prix) achete += nb(c.prix)||0; } }));
+  $("#avanceCourses").innerHTML = n + " article" + (n>1?"s":"") + " sur " + tot + " coché" + (n>1?"s":"") +
+    (achete ? ' — <b class="num">' + eur(achete) + "</b> reportés au budget" : "");
   $("#listeCourses").innerHTML = COURSES.map(g =>
-    '<div class="grp"><h4>' + esc(g.titre) + "</h4>" + g.items.map(it =>
-      '<label class="coche' + (D.courses[it.id] ? " fait" : "") + '"><input type="checkbox" data-course="' +
-      it.id + '"' + (D.courses[it.id] ? " checked" : "") + "><span>" + it.html + "</span></label>").join("") + "</div>").join("");
+    '<div class="grp"><h4>' + esc(g.titre) + "</h4>" + g.items.map(it => {
+      const c = coche(it.id);
+      return '<div class="art' + (c ? " fait" : "") + '"><label class="coche"><input type="checkbox" data-course="' +
+        it.id + '"' + (c ? " checked" : "") + "><span>" + it.html + "</span></label>" +
+        (c ? '<div class="prix"><input type="text" inputmode="decimal" data-prix="' + it.id +
+             '" value="' + (c.prix || "") + '" placeholder="prix €">' +
+             '<input type="text" data-ou="' + it.id + '" value="' + esc(c.ou || "") + '" placeholder="vendeur">' +
+             '<span class="po">' + esc(posteDe(g.titre, it.html)) + "</span></div>" : "") + "</div>";
+    }).join("") + "</div>").join("");
 }
 
 $("#bAjoutDep").addEventListener("click", () => {
-  const m = Number($("#dMontant").value), a = $("#dArticle").value.trim();
-  if(!a || !m){ alert("Indiquez au moins un article et un montant."); return; }
+  const m = nb($("#dMontant").value), a = $("#dArticle").value.trim();
+  if(!a || !isFinite(m) || m <= 0){ alert("Indiquez un article et un montant, par exemple 17,99."); return; }
   D.depenses.push({date:$("#dDate").value || auj(), article:a, montant:m, poste:$("#dPoste").value, ou:$("#dOu").value.trim()});
   D.depenses.sort((x,y) => x.date.localeCompare(y.date));
   sauver(); ["#dArticle","#dMontant","#dOu"].forEach(s => $(s).value = ""); tout();
@@ -3037,7 +3078,19 @@ document.addEventListener("change", e => {
   if(d.reel !== undefined){ D.population[+d.reel].reel = t.value === "" ? null : Number(t.value); sauver(); rendreBord(); rendrePop(); }
   if(d.entre !== undefined){ D.population[+d.entre].entre = t.value; sauver(); }
   if(d.montage !== undefined){ D.montage[d.montage] = t.checked; sauver(); rendreEntretien(); }
-  if(d.course !== undefined){ D.courses[d.course] = t.checked; sauver(); rendreBudget(); }
+  if(d.course !== undefined){
+    D.courses[d.course] = t.checked ? Object.assign({fait:true}, coche(d.course) || {}) : undefined;
+    if(!t.checked) delete D.courses[d.course];
+    sauver(); rendreBudget();
+  }
+  if(d.prix !== undefined){
+    const c = coche(d.prix) || {fait:true};
+    c.prix = t.value.trim(); D.courses[d.prix] = c; sauver(); rendreBudget();
+  }
+  if(d.ou !== undefined){
+    const c = coche(d.ou) || {fait:true};
+    c.ou = t.value.trim(); D.courses[d.ou] = c; sauver();
+  }
   if(d.eau !== undefined){ D.eau = D.eau || {}; D.eau[d.eau] = t.checked; sauver(); rendreEau(); }
   if(d.secu !== undefined){ D.securite = D.securite || {}; D.securite[d.secu] = t.checked; sauver(); rendreKit(); }
 });
@@ -3220,7 +3273,7 @@ function rendreKit(){
 function alerteChaleur(){
   const r = dernier();
   if(!r || r.temp === "" || r.temp == null) return "";
-  const t = Number(r.temp);
+  const t = nb(r.temp);
   if(t < 27) return "";
   const l = CHALEUR.find(x => /(\d+)\s*à\s*(\d+)/.test(x[0]) &&
     t >= +/(\d+)\s*à\s*(\d+)/.exec(x[0])[1] && t <= +/(\d+)\s*à\s*(\d+)/.exec(x[0])[2]) || CHALEUR[CHALEUR.length-1];
