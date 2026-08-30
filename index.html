@@ -150,12 +150,19 @@ td.r,th.r{text-align:right; padding-right:0}
 .art:last-child{border-bottom:0}
 .art.fait .coche span{color:var(--encre-pale)}
 .art .coche{border-bottom:0}
+.art .outils{display:flex; gap:4px; padding:0 0 7px 28px; flex-wrap:wrap}
+.art .outils button{padding:2px 6px; font-size:11.5px}
+.art.remplace{padding:7px 0; display:flex; flex-direction:column; gap:2px}
+.art.remplace .barre2{text-decoration:line-through; color:var(--encre-pale); font-size:13.5px}
+.art.remplace .ref{font-size:11.5px; color:var(--encre-pale)}
+.coche span .ref{font-size:11.5px; color:var(--encre-pale)}
 .detail{padding:0 0 10px 28px; display:flex; flex-direction:column; gap:6px}
 .detail input{padding:6px 8px; font-size:13px}
 .detail .d2{display:grid; grid-template-columns:1fr 1fr; gap:6px}
 .detail .po{font-size:11.5px; color:var(--encre-pale); align-self:center}
 .detail .ref{font-size:11.5px; color:var(--encre-pale)}
 .detail .ref.plus{color:var(--ambre)} .detail .ref.moins{color:var(--mousse)}
+.detail .racheter{align-self:flex-start; padding:6px 10px; font-size:12.5px}
 .detail .photoBtn{display:inline-block; text-align:center; padding:7px 10px; font-size:12.5px; cursor:pointer}
 .detail .ph2{display:flex; gap:8px; align-items:flex-start}
 .detail .ph2 img{width:84px; height:64px; object-fit:cover; border-radius:6px}
@@ -409,6 +416,9 @@ nav button.on{color:var(--eau); box-shadow:inset 0 2px 0 var(--eau)}
         <div class="champ"><label for="dQte">Quantité</label><input id="dQte" placeholder="2 sacs, 250 ml…"></div>
       </div>
       <button class="bp" id="bAjoutDep">Enregistrer</button>
+      <p style="margin:8px 0 0; font-size:12px; color:var(--encre-pale)">
+        Pour un réachat — nourriture, ouate, réactifs — utilisez le bouton « Racheter » de l'article
+        dans la liste de courses : il remplit ce formulaire tout seul.</p>
     </div>
   </div>
   <div class="pan" id="pan-courant">
@@ -2728,6 +2738,8 @@ const REFS = [
 ];
 function refDe(id, texte){
   if(D.ref && D.ref[id] !== undefined && D.ref[id] !== "") return nb(D.ref[id]);
+  const p = (D.perso || []).find(x => x.id === id);
+  if(p && p.remplace && D.ref && D.ref[p.remplace] !== undefined && D.ref[p.remplace] !== "") return nb(D.ref[p.remplace]);
   const t = texte.replace(/<[^>]+>/g, "");
   for(const [re, v] of REFS) if(re.test(t)) return v;
   return null;
@@ -2761,7 +2773,7 @@ function vide(){
   return {reglages:{miseEnEau:"", volume:150, chgt:45},
     releves:[], population:JSON.parse(JSON.stringify(POP_INIT)),
     depenses:[], taches:JSON.parse(JSON.stringify(TACHES_INIT)), journal:[],
-    montage:{}, courses:{}, eau:{}, securite:{}, perso:[], ref:{}};
+    montage:{}, courses:{}, eau:{}, securite:{}, perso:[], ref:{}, renom:{}};
 }
 function charger(){
   try{
@@ -2980,14 +2992,35 @@ $("#bAjoutPop").addEventListener("click", () => {
 });
 
 /* ---------- budget et courses ---------- */
+function libelle(it){
+  return (D.renom && D.renom[it.id]) ? esc(D.renom[it.id]) : it.html;
+}
+function remplacantDe(id){ return (D.perso || []).find(p => p.remplace === id); }
 function groupes(){
-  const g = COURSES.map(x => ({titre:x.titre, items:x.items.slice()}));
+  const g = COURSES.map(x => ({titre:x.titre, items:x.items.map(i => Object.assign({}, i))}));
   (D.perso || []).forEach(p => {
     let cible = g.find(x => x.titre === p.groupe);
     if(!cible){ cible = {titre:p.groupe, items:[]}; g.push(cible); }
-    cible.items.push({id:p.id, html:esc(p.nom), perso:true});
+    const it = {id:p.id, html:esc(p.nom), perso:true, remplace:p.remplace || ""};
+    if(p.remplace){
+      let orig = null, pos = -1;
+      g.forEach(x => x.items.forEach((y,k) => { if(y.id === p.remplace){ orig = y; pos = k; } }));
+      if(orig){ it.origine = orig.html; it.posteOrig = orig.posteOrig || null; }
+    }
+    cible.items.push(it);
   });
+  g.forEach(x => x.items.forEach(y => { y.remplace_par = remplacantDe(y.id); }));
   return g;
+}
+function nomArticle(html){ return html.replace(/<[^>]+>/g, "").trim(); }
+function rachats(html){
+  const n = nomArticle(html);
+  const l = D.depenses.filter(d => d.article === n && d.nature === "courant")
+                      .sort((a,b) => a.date.localeCompare(b.date));
+  if(!l.length) return "";
+  const tot = l.reduce((s,d) => s + nb(d.montant), 0);
+  return '<span class="ref">racheté ' + l.length + " fois · dernier le " + frDate(l[l.length-1].date) +
+    " · " + eur(tot) + " au total</span>";
 }
 function ecart(id, texte, c){
   const r = refDe(id, texte), p = c && c.prix ? nb(c.prix) : NaN;
@@ -3112,10 +3145,17 @@ function rendreBudget(){
   if(!sel2.options.length) sel2.innerHTML = COURSES.map(g => "<option>" + esc(g.titre) + "</option>").join("");
   $("#listeCourses").innerHTML = groupes().map(g =>
     '<div class="grp"><h4>' + esc(g.titre) + "</h4>" + g.items.map(it => {
+      if(it.remplace_par)
+        return '<div class="art remplace"><span class="barre2">' + libelle(it) + "</span>" +
+               '<span class="ref">remplacé par ' + esc(it.remplace_par.nom) + "</span></div>";
       const c = coche(it.id);
       return '<div class="art' + (c ? " fait" : "") + '"><label class="coche"><input type="checkbox" data-course="' +
-        it.id + '"' + (c ? " checked" : "") + "><span>" + it.html + "</span></label>" +
-        (it.perso ? '<button class="bmini sup" data-sup-course="' + it.id + '" style="float:right;margin-top:-30px">×</button>' : "") +
+        it.id + '"' + (c ? " checked" : "") + "><span>" + libelle(it) +
+        (it.origine ? ' <span class="ref">en remplacement de ' + it.origine.replace(/<[^>]+>/g,"") + "</span>" : "") +
+        "</span></label>" +
+        '<div class="outils"><button class="bmini" data-renom="' + it.id + '">renommer</button>' +
+        '<button class="bmini" data-remplacer="' + it.id + '">remplacer</button>' +
+        (it.perso ? '<button class="bmini sup" data-sup-course="' + it.id + '">supprimer</button>' : "") + "</div>" +
         (c ? '<div class="detail">' +
              '<div class="d2"><input type="text" inputmode="decimal" data-prix="' + it.id + '" value="' + (c.prix || "") + '" placeholder="prix €">' +
              '<input type="date" data-achat="' + it.id + '" value="' + (c.date || "") + '"></div>' +
@@ -3127,7 +3167,9 @@ function rendreBudget(){
              '<div class="d2"><input type="text" inputmode="decimal" data-ref="' + it.id +
              '" value="' + (D.ref && D.ref[it.id] !== undefined ? D.ref[it.id] : "") +
              '" placeholder="prix de référence €"><span class="po">' + esc(posteDe(g.titre, it.html)) + "</span></div>" +
-             ecart(it.id, it.html, c) + "</div>" : "") + "</div>";
+             ecart(it.id, it.html, c) + rachats(it.html) +
+             '<button class="bs racheter" data-racheter="' + it.id + '">Racheter — nouvelle dépense</button>' +
+             "</div>" : "") + "</div>";
     }).join("") + "</div>").join("");
 }
 
@@ -3245,12 +3287,54 @@ document.addEventListener("click", e => {
     b.parentNode.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
     rendreBudget(); return;
   }
+  if(d.renom !== undefined){
+    let actuel = "";
+    groupes().forEach(g => g.items.forEach(it => { if(it.id === d.renom) actuel = libelle(it).replace(/<[^>]+>/g,""); }));
+    const v = prompt("Nouvel intitulé", actuel);
+    if(v !== null){
+      D.renom = D.renom || {};
+      const p = (D.perso || []).find(x => x.id === d.renom);
+      if(p) p.nom = v.trim(); else if(v.trim()) D.renom[d.renom] = v.trim(); else delete D.renom[d.renom];
+      sauver(); rendreBudget();
+    }
+    return;
+  }
+  if(d.remplacer !== undefined){
+    const v = prompt("Par quoi le remplacez-vous ?", "");
+    if(v && v.trim()){
+      let groupe = "";
+      groupes().forEach(g => g.items.forEach(it => { if(it.id === d.remplacer) groupe = g.titre; }));
+      D.perso = D.perso || [];
+      D.perso.push({id:"p" + Date.now().toString(36), nom:v.trim(), groupe:groupe, remplace:d.remplacer});
+      delete D.courses[d.remplacer];
+      sauver(); rendreBudget();
+    }
+    return;
+  }
+  if(d.racheter !== undefined){
+    const id = d.racheter, c = coche(id) || {};
+    let nom = "", poste = "";
+    groupes().forEach(g => g.items.forEach(it => {
+      if(it.id === id){ nom = nomArticle(it.html); poste = posteDe(g.titre, it.html); }
+    }));
+    const dernier = D.depenses.filter(x => x.article === nom && x.nature === "courant").pop();
+    $("#dArticle").value = nom;
+    $("#dMontant").value = (dernier && dernier.montant) || c.prix || "";
+    $("#dOu").value = (dernier && dernier.ou) || c.ou || "";
+    $("#dQte").value = (dernier && dernier.qte) || c.qte || "";
+    $("#dPoste").value = poste;
+    $("#dNature").value = "courant";
+    $("#dDate").value = auj();
+    document.querySelector(".sousong[data-groupe='bud'] button[data-pan='depenses']").click();
+    setTimeout(() => { $("#dArticle").scrollIntoView({block:"center"}); $("#dMontant").focus(); }, 60);
+    return;
+  }
   if(d.photosup !== undefined){
     const c = coche(d.photosup); if(c){ c.photo = ""; D.courses[d.photosup] = c; sauver(); rendreBudget(); }
   }
   if(d.supCourse !== undefined){
     D.perso = (D.perso||[]).filter(x => x.id !== d.supCourse);
-    delete D.courses[d.supCourse]; sauver(); tout();
+    delete D.courses[d.supCourse]; delete (D.renom||{})[d.supCourse]; sauver(); tout();
   }
   if(d.fait     !== undefined){ D.taches[+d.fait].fait = auj(); sauver(); tout(); }
   if(d.guide    !== undefined){ versGuide(d.guide, null); }
