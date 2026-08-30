@@ -162,6 +162,7 @@ td.r,th.r{text-align:right; padding-right:0}
 .detail .po{font-size:11.5px; color:var(--encre-pale); align-self:center}
 .detail .ref{font-size:11.5px; color:var(--encre-pale)}
 .detail .ref.plus{color:var(--ambre)} .detail .ref.moins{color:var(--mousse)}
+.expli{font-size:12.5px; color:var(--encre-pale); margin:0 0 10px; line-height:1.45}
 .detail .racheter, .detail .coller{align-self:flex-start; padding:6px 10px; font-size:12.5px}
 .detail .lienProduit{font-size:12.5px; color:var(--eau); word-break:break-all}
 #collage{position:relative; background:var(--carte); border:1px solid var(--trait); border-radius:var(--r); padding:12px; margin-bottom:12px}
@@ -3062,110 +3063,119 @@ function ecart(id, texte, c){
   return '<span class="ref ' + cl + '">référence ' + eur(r) + " · " +
     (Math.abs(d) < 0.5 ? "au prix attendu" : eur(Math.abs(d)) + (d > 0 ? " de plus" : " de moins")) + "</span>";
 }
+function achats(){
+  const out = [];
+  groupes().forEach(g => g.items.forEach(it => {
+    if(it.remplace_par) return;
+    const c = coche(it.id);
+    if(c && c.prix && isFinite(nb(c.prix)) && nb(c.prix) > 0)
+      out.push({date:c.date || "", article:nomArticle(libelle(it)), montant:nb(c.prix),
+                poste:posteDe(g.titre, it.html), ou:c.ou || "", qte:c.qte || "",
+                nature:estConso(it, g.titre) ? "courant" : "install",
+                source:"liste", photo:c.photo || "", id:it.id});
+  }));
+  D.depenses.forEach((d,i) => out.push({date:d.date || "", article:d.article, montant:nb(d.montant),
+    poste:d.poste, ou:d.ou || "", qte:d.qte || "", nature:d.nature || "install",
+    source:"saisie", photo:"", idx:i}));
+  return out;
+}
 function rendreBudget(){
+  const A = achats();
+  const inst = A.filter(a => a.nature === "install");
+  const cour = A.filter(a => a.nature === "courant");
+
   // ---- installation ----
-  const inst = D.depenses.filter(d => (d.nature || "install") === "install");
-  const parPoste = {};
-  inst.forEach(d => parPoste[d.poste] = (parPoste[d.poste]||0) + nb(d.montant));
-  groupes().forEach(g => g.items.forEach(it => {
-    const c = coche(it.id);
-    if(c && c.prix && isFinite(nb(c.prix))){
-      const p = posteDe(g.titre, it.html);
-      parPoste[p] = (parPoste[p]||0) + nb(c.prix);
-    }
-  }));
+  const parPoste = {}, detail = {};
+  inst.forEach(a => {
+    parPoste[a.poste] = (parPoste[a.poste]||0) + a.montant;
+    (detail[a.poste] = detail[a.poste] || []).push(a);
+  });
   let reel = 0, pmin = 0, pmax = 0;
-  const detail = {};
-  inst.forEach(d => (detail[d.poste] = detail[d.poste] || []).push(
-    {nom:d.article, qte:d.qte, ou:d.ou, date:d.date, prix:nb(d.montant), photo:""}));
-  groupes().forEach(g => g.items.forEach(it => {
-    const c = coche(it.id);
-    if(c && c.prix && isFinite(nb(c.prix))){
-      const p = posteDe(g.titre, it.html);
-      (detail[p] = detail[p] || []).push({nom:it.html.replace(/<[^>]+>/g,""), qte:c.qte, ou:c.ou,
-                                          date:c.date, prix:nb(c.prix), photo:c.photo || ""});
-    }
-  }));
-  const refPoste = {};
-  groupes().forEach(g => g.items.forEach(it => {
-    const v = refDe(it.id, it.html);
-    if(v){ const po = posteDe(g.titre, it.html); refPoste[po] = (refPoste[po]||0) + v; }
-  }));
   const corps = POSTES.map(p => {
     const r = parPoste[p.nom] || 0;
     reel += r; pmin += p.min; pmax += p.max;
     const pct = Math.min(100, p.max ? r/p.max*100 : 0);
     const lignes = (detail[p.nom] || []).sort((a,b) => (a.date||"").localeCompare(b.date||"")).map(a =>
       '<div class="artligne">' + (a.photo ? '<img src="' + a.photo + '" alt="">' : '<img alt="">') +
-      '<div class="t2">' + esc(a.nom) + "<span>" +
-      [a.qte, a.ou, a.date ? frDate(a.date) : ""].filter(Boolean).map(esc).join(" · ") +
-      '</span></div><div class="m2 num">' + eur(a.prix) + "</div></div>").join("");
+      '<div class="t2">' + esc(a.article) + "<span>" +
+      [a.qte, a.ou, a.date ? frDate(a.date) : "date non renseignée"].filter(Boolean).map(esc).join(" · ") +
+      '</span></div><div class="m2 num">' + eur(a.montant) + "</div></div>").join("");
     return '<div class="poste"><div class="l1"><b>' + esc(p.nom) + '</b><span class="num">' + eur(r) +
-      '</span></div><div class="l2 num">prévu ' + p.min + " – " + p.max + " €" +
-      (refPoste[p.nom] ? " · référence articles " + eur(refPoste[p.nom]) : "") +
-      (r > p.max ? " · dépassé de " + eur(r-p.max) : "") + '</div><div class="barre"><i class="' +
-      (r > p.max ? "depasse" : "") + '" style="width:' + pct.toFixed(0) + '%"></i></div>' +
+      '</span></div><div class="l2 num">budget prévu ' + p.min + " – " + p.max + " €" +
+      (r > p.max ? " · dépassé de " + eur(r-p.max) : (r ? " · reste " + eur(Math.max(0, p.min-r)) : "")) +
+      '</div><div class="barre"><i class="' + (r > p.max ? "depasse" : "") + '" style="width:' + pct.toFixed(0) + '%"></i></div>' +
       (lignes ? '<div style="margin-top:8px">' + lignes + "</div>" : "") + "</div>";
   }).join("");
   const hors = Object.keys(parPoste).filter(k => !POSTES.some(p => p.nom === k));
   const ht = hors.reduce((s,k) => s + parPoste[k], 0); reel += ht;
-  const reste = pmin - reel;
-  $("#synthBudget").innerHTML = corps +
+  $("#synthBudget").innerHTML =
+    '<p class="expli">Tout ce qui s\'achète une fois : la cuve, le sol, le décor, le matériel, les plantes et le vivant. ' +
+    'Les lignes viennent de la liste Installation et de vos saisies libres.</p>' + corps +
     (hors.length ? '<div class="poste"><div class="l1"><b>Hors postes</b><span class="num">' + eur(ht) + "</span></div></div>" : "") +
-    '<div class="total"><b>Dépensé</b><span class="num">' + eur(reel) + "</span></div>" +
-    '<div style="text-align:right;font-size:12px;color:var(--encre-pale)" class="num">prévisionnel ' + pmin + " – " + pmax + " €" +
-    (reste > 0 ? " · reste environ " + eur(reste) + " à engager" : "") + "</div>";
+    '<div class="total"><b>Total installation</b><span class="num">' + eur(reel) + "</span></div>" +
+    '<div style="text-align:right;font-size:12px;color:var(--encre-pale)" class="num">budget prévu ' + pmin + " – " + pmax + " €" +
+    (reel < pmin ? " · reste environ " + eur(pmin - reel) : "") + "</div>";
 
   const sel = $("#dPoste");
   if(!sel.options.length) sel.innerHTML = POSTES.map(p => "<option>" + esc(p.nom) + "</option>").join("");
 
   // ---- fonctionnement ----
-  const cour = D.depenses.filter(d => d.nature === "courant");
   const an = auj().slice(0,4), mois = auj().slice(0,7);
-  const totAn = cour.filter(d => d.date.slice(0,4) === an).reduce((s,d) => s + nb(d.montant), 0);
-  const totMois = cour.filter(d => d.date.slice(0,7) === mois).reduce((s,d) => s + nb(d.montant), 0);
-  const totTout = cour.reduce((s,d) => s + nb(d.montant), 0);
+  const datees = cour.filter(a => a.date);
+  const totAn = datees.filter(a => a.date.slice(0,4) === an).reduce((s,a) => s + a.montant, 0);
+  const totMois = datees.filter(a => a.date.slice(0,7) === mois).reduce((s,a) => s + a.montant, 0);
+  const totTout = cour.reduce((s,a) => s + a.montant, 0);
   const parMois = {};
-  cour.forEach(d => parMois[d.date.slice(0,7)] = (parMois[d.date.slice(0,7)]||0) + nb(d.montant));
+  datees.forEach(a => parMois[a.date.slice(0,7)] = (parMois[a.date.slice(0,7)]||0) + a.montant);
   const cles = Object.keys(parMois).sort();
-  const moyenne = cles.length ? totTout / cles.length : 0;
-  const pct = Math.min(100, totAn/215*100);
+  const moyenne = cles.length ? cles.reduce((s,k) => s + parMois[k], 0) / cles.length : 0;
+  const pct2 = Math.min(100, totAn/215*100);
   $("#synthCourant").innerHTML =
+    '<p class="expli">Ce qui se rachète : nourriture, ouate, réactifs, conditionneur, feuilles. ' +
+    'Le premier achat d\'un consommable compte déjà ici, ainsi que chaque « Racheter ».</p>' +
     '<div class="poste"><div class="l1"><b>Dépensé en ' + an + '</b><span class="num">' + eur(totAn) + '</span></div>' +
     '<div class="l2 num">budget annuel prévu 215 – 300 €</div>' +
-    '<div class="barre"><i class="' + (totAn > 300 ? "depasse" : "") + '" style="width:' + pct.toFixed(0) + '%"></i></div></div>' +
+    '<div class="barre"><i class="' + (totAn > 300 ? "depasse" : "") + '" style="width:' + pct2.toFixed(0) + '%"></i></div></div>' +
     '<div class="poste"><div class="l1"><b>Ce mois-ci</b><span class="num">' + eur(totMois) + "</span></div>" +
     '<div class="l2 num">repère du guide : environ 20 € par mois</div></div>' +
     (cles.length ? '<div class="poste"><div class="l1"><b>Moyenne mensuelle constatée</b><span class="num">' +
-      eur(moyenne) + "</span></div><div class='l2 num'>sur " + cles.length + " mois de relevés</div></div>" : "") +
+      eur(moyenne) + "</span></div><div class='l2 num'>sur " + cles.length + " mois</div></div>" : "") +
+    (cour.length > datees.length ? '<div class="poste"><div class="l2">' + (cour.length - datees.length) +
+      " ligne(s) sans date, comptée(s) seulement dans le total général de " + eur(totTout) + "</div></div>" : "") +
     (cles.length ? '<h3 style="margin:14px 0 6px">Par mois</h3><table>' +
       cles.slice().reverse().map(m => {
-        const p = m.split("-");
-        return "<tr><td class='num'>" + p[1] + "/" + p[0] + "</td><td class='num r'>" + eur(parMois[m]) + "</td></tr>";
+        const q = m.split("-");
+        return "<tr><td class='num'>" + q[1] + "/" + q[0] + "</td><td class='num r'>" + eur(parMois[m]) + "</td></tr>";
       }).join("") + "</table>" : '<p class="vide">Aucune dépense de fonctionnement enregistrée.</p>');
   $("#tableRecurrent").innerHTML = "<table>" + RECURRENT.map(r =>
     "<tr><td style='width:44%'><b>" + r[0] + "</b></td><td class='num r'>" + r[2] + "</td></tr>").join("") +
     "<tr><td><b>Total</b></td><td class='num r'><b>215 à 300 €</b></td></tr></table>";
 
   // ---- historique ----
+  const fph2 = $("#fPosteHist");
+  if(fph2 && !fph2.options.length) fph2.innerHTML = '<option value="">Tous les postes</option>' +
+    POSTES.map(p => "<option>" + esc(p.nom) + "</option>").join("");
   const per = D.filtreDep || "tout";
-  let liste = D.depenses.slice();
-  if(per === "annee") liste = liste.filter(d => d.date.slice(0,4) === an);
-  if(per === "mois")  liste = liste.filter(d => d.date.slice(0,7) === mois);
-  if(D.filtrePoste) liste = liste.filter(d => d.poste === D.filtrePoste);
-  const totalListe = liste.reduce((s,d) => s + nb(d.montant), 0);
+  let liste = A.slice();
+  if(per === "annee") liste = liste.filter(a => a.date.slice(0,4) === an);
+  if(per === "mois")  liste = liste.filter(a => a.date.slice(0,7) === mois);
+  if(D.filtrePoste)   liste = liste.filter(a => a.poste === D.filtrePoste);
+  liste.sort((a,b) => (b.date || "").localeCompare(a.date || ""));
+  const totalListe = liste.reduce((s,a) => s + a.montant, 0);
   $("#listeDep").innerHTML = liste.length
-    ? '<p class="avance"><b class="num">' + eur(totalListe) + "</b> sur " + liste.length + " ligne" + (liste.length>1?"s":"") + "</p>" +
+    ? '<p class="avance"><b class="num">' + eur(totalListe) + "</b> sur " + liste.length + " ligne" + (liste.length>1?"s":"") +
+      " — installation " + eur(liste.filter(a => a.nature === "install").reduce((s,a) => s + a.montant, 0)) +
+      ", fonctionnement " + eur(liste.filter(a => a.nature === "courant").reduce((s,a) => s + a.montant, 0)) + "</p>" +
       "<table><tr><th>Date</th><th>Article</th><th class='r'>Montant</th><th></th></tr>" +
-      liste.slice().reverse().map(d => {
-        const idx = D.depenses.indexOf(d);
-        return "<tr><td class='num'>" + frDate(d.date) + "</td><td>" + esc(d.article) +
-          (d.qte ? " <span style='color:var(--encre-pale)'>· " + esc(d.qte) + "</span>" : "") +
-          "<br><span style='font-size:11.5px;color:var(--encre-pale)'>" +
-          (d.nature === "courant" ? "Fonctionnement" : "Installation") + " · " + esc(d.poste) +
-          (d.ou ? " · " + esc(d.ou) : "") + "</span></td><td class='num r'>" + eur(d.montant) +
-          "</td><td class='r'><button class='bmini sup' data-sup-dep='" + idx + "'>×</button></td></tr>";
-      }).join("") + "</table>"
+      liste.map(a =>
+        "<tr><td class='num'>" + (a.date ? frDate(a.date) : "—") + "</td><td>" + esc(a.article) +
+        (a.qte ? " <span style='color:var(--encre-pale)'>· " + esc(a.qte) + "</span>" : "") +
+        "<br><span style='font-size:11.5px;color:var(--encre-pale)'>" +
+        (a.nature === "courant" ? "Fonctionnement" : "Installation") + " · " + esc(a.poste) +
+        (a.ou ? " · " + esc(a.ou) : "") + (a.source === "liste" ? " · depuis la liste" : "") +
+        "</span></td><td class='num r'>" + eur(a.montant) + "</td><td class='r'>" +
+        (a.source === "saisie" ? "<button class='bmini sup' data-sup-dep='" + a.idx + "'>×</button>" : "") +
+        "</td></tr>").join("") + "</table>"
     : '<p class="vide">Aucune dépense pour cette période.</p>';
 
   // ---- liste de courses ----
