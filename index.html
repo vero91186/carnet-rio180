@@ -34,7 +34,29 @@ h3{font-size:13px; margin:16px 0 7px; font-weight:600; color:var(--encre-pale); 
 .carte{background:var(--carte); border:1px solid var(--trait); border-radius:var(--r); padding:var(--pad); margin-bottom:12px}
 .vide{color:var(--encre-pale); font-size:13.5px; padding:6px 0}
 
-.sousong{display:flex; gap:6px; margin-bottom:12px}
+.sousong{display:flex; gap:6px; margin-bottom:12px; overflow-x:auto; -webkit-overflow-scrolling:touch}
+.sousong button{white-space:nowrap; flex:0 0 auto; min-width:82px}
+.chrono{border-left:3px solid var(--trait); padding:0 0 0 12px; margin-left:4px}
+.chrono .et{position:relative; padding:0 0 12px}
+.chrono .et:last-child{padding-bottom:0}
+.chrono .et:before{content:""; position:absolute; left:-17px; top:5px; width:9px; height:9px;
+  border-radius:50%; background:var(--trait)}
+.chrono .et.ici:before{background:var(--eau)}
+.chrono .et.passe:before{background:var(--eau-clair)}
+.chrono .et b{display:block; font-size:13px; color:var(--encre-pale)}
+.chrono .et.ici b{color:var(--eau)}
+.chrono .et span{font-size:13.5px}
+.verdict{border-radius:var(--r); padding:11px 12px; font-size:13.5px; margin-bottom:12px}
+.verdict.ok{background:#EDF7EE; border:1px solid #BFE0C4; color:#2B5B33}
+.verdict.att{background:#FDF6E9; border:1px solid #EFD9AC; color:#7A5410}
+.verdict.att2{background:#F1F6F6; border:1px solid var(--trait); color:var(--encre-pale)}
+.sos select{margin-bottom:10px}
+.sos .rep{font-size:13.5px}
+.sos .rep b{color:var(--eau)}
+.jour{display:flex; gap:8px; padding:7px 0; border-bottom:1px solid var(--trait); font-size:13.5px}
+.jour:last-child{border-bottom:0}
+.jour b{flex:0 0 74px; font-weight:600}
+.jour.auj{background:#F1F8F7; margin:0 -6px; padding:7px 6px; border-radius:6px}
 .sousong button{flex:1; background:var(--carte); border:1px solid var(--trait); color:var(--encre-pale); font-size:13px; padding:8px 4px}
 .sousong button.on{background:var(--eau); color:#fff; border-color:var(--eau)}
 .pan{display:none} .pan.on{display:block}
@@ -261,6 +283,8 @@ nav button.on{color:var(--eau); box-shadow:inset 0 2px 0 var(--eau)}
   <p class="vide" id="dateReleve"></p>
   <h3>À faire</h3>
   <div class="carte" id="echeances"></div>
+  <h3>Où en est le bac</h3>
+  <div class="carte" id="ouEnEst"></div>
   <h3>Le bac aujourd'hui</h3>
   <div class="carte">
     <div class="colonne">
@@ -287,6 +311,7 @@ nav button.on{color:var(--eau); box-shadow:inset 0 2px 0 var(--eau)}
 
 <section id="s-param">
   <h2>Relevé des paramètres</h2>
+  <div id="rodage"></div>
   <div class="carte">
     <div class="champ"><label for="pDate">Date du relevé</label><input type="date" id="pDate"></div>
     <div class="trois">
@@ -315,6 +340,7 @@ nav button.on{color:var(--eau); box-shadow:inset 0 2px 0 var(--eau)}
   <div class="sousong" data-groupe="pop">
     <button data-pan="animaux" class="on">Animaux</button>
     <button data-pan="plantes">Plantes</button>
+    <button data-pan="calendrier">Calendrier</button>
   </div>
   <div class="pan on" id="pan-animaux">
     <div class="carte" id="listePop"></div>
@@ -332,6 +358,9 @@ nav button.on{color:var(--eau); box-shadow:inset 0 2px 0 var(--eau)}
   </div>
   <div class="pan" id="pan-plantes">
     <div class="carte" id="listePlantes"></div>
+  </div>
+  <div class="pan" id="pan-calendrier">
+    <div class="carte" id="calendrier"></div>
   </div>
 </section>
 
@@ -370,6 +399,8 @@ nav button.on{color:var(--eau); box-shadow:inset 0 2px 0 var(--eau)}
   <div class="sousong" data-groupe="ent">
     <button data-pan="taches" class="on">Récurrent</button>
     <button data-pan="montage">Montage</button>
+    <button data-pan="eau">Changement d'eau</button>
+    <button data-pan="nourrir">Nourrir</button>
     <button data-pan="journal">Journal</button>
   </div>
   <div class="pan on" id="pan-taches">
@@ -388,6 +419,16 @@ nav button.on{color:var(--eau); box-shadow:inset 0 2px 0 var(--eau)}
     <p class="avance" id="avanceMontage"></p>
     <div class="carte" id="listeMontage"></div>
   </div>
+  <div class="pan" id="pan-eau">
+    <p class="avance" id="avanceEau"></p>
+    <div class="carte" id="listeEau"></div>
+    <button class="bp" id="bEauFini" style="margin-bottom:12px">Changement d'eau terminé</button>
+  </div>
+  <div class="pan" id="pan-nourrir">
+    <div class="carte" id="planSemaine"></div>
+    <h3>Les rations</h3>
+    <div class="carte" id="rations"></div>
+  </div>
   <div class="pan" id="pan-journal">
     <div class="carte">
       <div class="champ"><label for="jNote">Note libre</label><textarea id="jNote" placeholder="Ce que vous avez observé ou fait aujourd'hui."></textarea></div>
@@ -399,6 +440,20 @@ nav button.on{color:var(--eau); box-shadow:inset 0 2px 0 var(--eau)}
 
 <section id="s-guide">
   <h2>Le guide</h2>
+  <div class="sousong" data-groupe="gui">
+    <button data-pan="consulter" class="on">Consulter</button>
+    <button data-pan="sos">Un problème</button>
+  </div>
+  <div class="pan" id="pan-sos">
+    <div class="carte sos">
+      <label for="sosChoix">Ce que vous constatez</label>
+      <select id="sosChoix"><option value="">Choisir un symptôme…</option></select>
+      <div class="rep" id="sosRep"></div>
+    </div>
+    <h3>Températures d'été</h3>
+    <div class="carte" id="tableChaleur"></div>
+  </div>
+  <div class="pan on" id="pan-consulter">
   <div id="guide-nav">
     <select id="gSaut"><option value="">Aller à une section…</option>
 <option value="1">1. Budget global &amp; liste de courses</option>
@@ -2509,6 +2564,7 @@ nav button.on{color:var(--eau); box-shadow:inset 0 2px 0 var(--eau)}
 
 </div>
   </div>
+  </div>
 </section>
 
 <section id="s-donnees">
@@ -2521,6 +2577,10 @@ nav button.on{color:var(--eau); box-shadow:inset 0 2px 0 var(--eau)}
     </div>
     <button class="bp" id="bReglages">Enregistrer</button>
   </div>
+  <h3>Le bac tel qu'il est livré</h3>
+  <div class="carte" id="kit"></div>
+  <h3>Sécurité électrique — à vérifier une fois</h3>
+  <div class="carte" id="listeSecurite"></div>
   <h3>Seuils de surveillance</h3>
   <div class="carte" id="listeSeuils"></div>
   <h3>Sauvegarde</h3>
@@ -2577,6 +2637,24 @@ const POP_INIT = [{"nom": "Néon bleu", "strate": "Pleine eau", "prevu": 30, "se
 const PLANTES  = [{"nom": "Vallisneria", "place": "Arrière-plan", "qte": "4 pieds", "role": "Rideau qui masque le filtre ; se multiplie seule par stolons.", "ancre": "f-vallisneria", "img": "img/i-013.jpg"}, {"nom": "Cryptocoryne", "place": "Bordure de la clairière", "qte": "6 pieds", "role": "Touffes basses qui dessinent le bord de la plage de sable.", "ancre": "f-cryptocoryne", "img": "img/i-014.jpg"}, {"nom": "Mousse de Java", "place": "Racine et pierres plates", "qte": "3 portions", "role": "Surface à biofilm : le garde-manger des crevettes.", "ancre": "f-mousse-de-java", "img": "img/i-015.jpg"}, {"nom": "Anubias", "place": "Sur le bois", "qte": "2 pieds", "role": "Feuilles épaisses, quasi indestructibles, jamais enterrées.", "ancre": "f-anubias", "img": "img/i-016.jpg"}, {"nom": "Fougère de Java", "place": "Sur le bois", "qte": "1 à 2 touffes", "role": "Frondes en éventail, cachette appréciée des Corydoras.", "ancre": "f-fougere-de-java", "img": "img/i-017.jpg"}, {"nom": "Plantes flottantes", "place": "Surface", "qte": "5 pieds au départ", "role": "Tamisent la lumière et pompent les nitrates au démarrage.", "ancre": "f-plantes-flottantes", "img": "img/i-019.jpg"}];
 const MONTAGE  = [{"id": "m01", "html": "<b>La veille au plus tard — préparation.</b> Racine trempée 1 à 2 semaines (ou bouillie 1 à 2 h), sable rincé jusqu'à ce que l'eau de rinçage soit claire, laves et pierres plates brossées à l'eau claire sans savon, phare rincé. Vérifiez d'avoir <b>6 Cryptocoryne, 4 Vallisneria, 5 pierres</b> : avec moins, le côté gauche ne fait pas masse et la fuite ne se lit pas."}, {"id": "m02", "html": "<b>Bac vide, sec, de niveau.</b> Contrôlez le niveau du meuble à la bulle dans les deux sens avant toute chose : une cuve de 180 L ne se rattrape plus une fois pleine. Passez un chiffon humide sur les vitres intérieures."}, {"id": "m03", "html": "<b>Marquez les trois repères sur la vitre avant, à l'extérieur.</b> Scotch repositionnable à <b>X = 34</b> et <b>X = 78</b> — les deux angles de la clairière en façade — et un troisième à <b>X = 92</b>, sur la vitre latérale droite ou en haut du bandeau, qui marque le point de fuite. Gardez-les jusqu'à la fin."}, {"id": "m04", "html": "<b>Le côté gauche, sur le verre nu, avant tout sable.</b> C'est la masse qui commande tout le reste, donc elle se pose en premier. Phare à <b>X 10 / Y 22</b>, dos à l'angle. Lave 1, la plus grosse, à <b>X 22-34 / Y 8-18</b> — elle fait l'épaule de la clairière. Lave 2 à <b>X 16-26 / Y 20-28</b>, calée contre le phare. Lave 3, la plus petite, à <b>X 28-36 / Y 2-8</b>, en retrait. Serrez-les : entre elles, pas plus de 2 à 3 cm."}, {"id": "m05", "html": "<b>La racine, dressée sur une emprise réduite.</b> Base à <b>X 38 / Y 8</b> — le point focal des 38,5 cm. Son <b>emprise au sol ne doit pas dépasser 15 cm</b> : les points de contact tiennent dans le carré X 32-47 / Y 4-19, pas au-delà. Tout le reste se passe en hauteur — la ramure monte à 30-35 cm et <b>surplombe</b> la clairière vers X 70 / Y 20 sans jamais la toucher. C'est ce porte-à-faux qui conduit le regard vers la fuite tout en laissant le sable libre pour les Corydoras. Si elle bascule, calez-la sous une lave plutôt que de la lester."}, {"id": "m06", "html": "<b>Les deux pierres plates ferment la fuite.</b> À plat sur la vitre, face lisse vers le haut : la première à <b>X 74-84 / Y 14-20</b>, la seconde à <b>X 82-90 / Y 18-24</b>, légèrement en retrait. Elles pincent le passage du sable et le font disparaître derrière elles — c'est tout le mécanisme de cette disposition."}, {"id": "m07", "html": "<b>Vérification à vide.</b> Reculez de trois mètres, accroupissez-vous à hauteur du bac. Vous devez voir une masse pleine à gauche, un vide qui s'ouvre au centre et se rétrécit vers la droite. C'est la dernière étape où tout se déplace librement : ne versez pas le sable avant d'être satisfaite."}, {"id": "m08", "html": "<b>Le sable, versé humide à la tasse, autour de la clairière.</b> 4,5 cm au fond, 2 cm devant. Versez d'abord tout l'arrière, puis les côtés, en poussant le sable contre les pierres pour les <b>enterrer d'un bon tiers de leur hauteur</b>. C'est ce qui les empêchera d'être déchaussées par les Corydoras. Ne remplissez pas la clairière, et <b>gardez environ 1 kg dans le sac</b> : c'est votre réserve de rectification."}, {"id": "m09", "html": "<b>Creusez la clairière de 1 cm.</b> Retirez du sable à la main dans la baie pour qu'elle soit <b>1 cm sous</b> le niveau voisin : un creux, jamais un relief. Faites filer ce creux entre les pierres plates jusqu'à X 92 / Y 26, où il se perd. Un relief se serait effacé en trois semaines ; un creux se reforme d'un revers de main."}, {"id": "m10", "html": "<b>Eau à mi-hauteur</b>, versée doucement sur une assiette posée sur le sable, pour ne pas creuser. Rectifiez la bordure de la clairière à la main sous l'eau : c'est le seul moment où vous la voyez réellement de face, et le seul où elle se corrige sans tout défaire."}, {"id": "m11", "html": "<b>Plantation — le bord gauche d'abord.</b> <b>4 Cryptocoryne</b> serrées en arc devant la masse de gauche, à l'arrière de la clairière et hors de l'emprise des laves comme de celle de la racine : <b>(X 32 / Y 22), (38 / 26), (45 / 28), (52 / 25)</b>. Une bille d'argile sous chaque pied, enfoncée à la pince courbée, collet dégagé — la souche ne doit pas être enterrée."}, {"id": "m12", "html": "<b>Les 2 Cryptocoryne restantes à droite</b>, en retrait derrière les pierres plates : <b>(X 66 / Y 20)</b> et <b>(X 72 / Y 26)</b>. Elles ferment visuellement la fuite sans la boucher."}, {"id": "m13", "html": "<b>Vallisneria aux deux extrémités arrière :</b> 2 pieds à <b>X 4-14 / Y 36-40</b>, 2 pieds à <b>X 88-98 / Y 36-40</b>. Ceux de droite masqueront le filtre en quelques semaines. Enfoncez le rhizome puis remontez-le légèrement : les racines dans le sable, le collet blanc au-dessus."}, {"id": "m14", "html": "<b>Épiphytes — collés, jamais enterrés.</b> Anubias nana et fougère de Java à la colle cyanoacrylate sur la racine, un point de colle par rhizome, maintenu 20 secondes hors de l'eau. Mousse de Java étalée sur les <b>deux pierres plates</b> : c'est elle qui comblera le vide entre le sable nu et les Cryptocoryne."}, {"id": "m15", "html": "<b>Remplissage complet</b>, toujours sur l'assiette. Conditionneur dosé pour le volume réel (150 L d'eau, pas 180), chauffage et filtre branchés, flottantes posées en dernier sur la surface. Retirez les scotchs."}, {"id": "m16", "html": "<b>Le lendemain, avant tout le reste.</b> Regardez le bac de face à trois mètres : si la fuite ne se lit pas, c'est presque toujours que le côté gauche manque de densité. Ajoutez une Cryptocoryne ou remontez une lave — c'est encore rattrapable tant que rien n'a pris racine."}];
 const COURSES  = [{"titre": "CUVE ET DÉCOR", "items": [{"id": "c001", "html": "Cuve Rio 180 LED + meuble SBX"}, {"id": "c002", "html": "Sable clair 20 kg — JBL Sansibar River, 2 sacs de 10 kg"}, {"id": "c003", "html": "Racine araignée ramifiée 30 à 40 cm — emprise au sol 15 cm maxi"}, {"id": "c004", "html": "3 pierres de lave 8-15 cm (structure)"}, {"id": "c005", "html": "2 pierres plates (premier plan, à moussifier)"}, {"id": "c006", "html": "Poster de fond noir 100 × 50 cm + scotch double face ou vaporisateur"}, {"id": "c007", "html": "Phare résine — déjà acquis"}]}, {"titre": "TECHNIQUE ET MESURE", "items": [{"id": "c008", "html": "Mallette de tests en gouttes (JBL Combi Set Plus <b>NH4</b>)"}, {"id": "c009", "html": "Conditionneur <b>complet</b> (Seachem Prime, JBL Biotopol)"}, {"id": "c010", "html": "Programmateur de prise"}, {"id": "c011", "html": "Thermomètre indépendant"}, {"id": "c012", "html": "Multiprise à interrupteur"}, {"id": "c013", "html": "Détecteur de fuite (facultatif)"}, {"id": "c014", "html": "Niveau à bulle"}]}, {"titre": "PLANTES ET FIXATION", "items": [{"id": "c015", "html": "4 Vallisneria spiralis"}, {"id": "c016", "html": "6 Cryptocoryne wendtii"}, {"id": "c017", "html": "3 portions de mousse de Java (généreuses)"}, {"id": "c018", "html": "2 Anubias barteri nana"}, {"id": "c019", "html": "1 à 2 fougères de Java"}, {"id": "c020", "html": "5 plantes flottantes (Limnobium)"}, {"id": "c021", "html": "Feuilles de catappa séchées"}, {"id": "c022", "html": "Billes d'argile"}, {"id": "c023", "html": "Engrais liquide sans cuivre"}, {"id": "c024", "html": "Fil de coton ou colle gel aquarium"}]}, {"titre": "ENTRETIEN", "items": [{"id": "c025", "html": "Siphon JBL ProClean Aqua Ex 45-70"}, {"id": "c026", "html": "Aimant à vitre"}, {"id": "c027", "html": "Épuisette"}, {"id": "c028", "html": "2 seaux de 15 L dédiés"}, {"id": "c029", "html": "Tuyau d'air (acclimatation goutte-à-goutte)"}, {"id": "c030", "html": "Ouate bioPad <b>M</b> de rechange (réf. 88049)"}, {"id": "c031", "html": "Mousse Nitrax <b>M</b> de rechange (réf. 88055)"}, {"id": "c032", "html": "Mousse bioPlus <b>M</b> à gros pores, de rechange (réf. 88050)"}, {"id": "c033", "html": "Ciseaux fins réservés à la taille des plantes"}, {"id": "c034", "html": "Tuyau souple 12 mm (nettoyage du filtre)"}]}, {"titre": "NOURRITURE", "items": [{"id": "c035", "html": "Micro-granulés (JBL NovoGranoMix Mini)"}, {"id": "c036", "html": "Pastilles de fond (JBL NovoTab)"}, {"id": "c037", "html": "Pastilles d'algues (Hikari Algae Wafers)"}, {"id": "c038", "html": "Artémias congelées"}]}, {"titre": "LE VIVANT — DANS CET ORDRE", "items": [{"id": "c039", "html": "S4 · 20 Neocaridina, couleur : ________"}, {"id": "c040", "html": "S5 · 8 Amano"}, {"id": "c041", "html": "S6 · 8 Corydoras sterbai"}, {"id": "c042", "html": "S6 · 1 Ancistrus"}, {"id": "c043", "html": "S6 · 3 à 5 Neritina"}, {"id": "c044", "html": "S8 · 30 néons bleus"}, {"id": "c045", "html": "S12 · 6 Otocinclus (bac mûr obligatoire)"}]}];
+const CAL      = [["<b>Semaines 1 à 4</b>", "Mise en eau complète, disposition des décors et plantation. Aucun animal.", "Permet d'accomplir le cycle de l'azote indispensable."], ["<b>Fin semaine 4</b>", "Introduction des 20 Neocaridina (une seule couleur), après vérification NO2 = 0. Les 8 Amano suivent en semaine 5.", "Elles s'approprient les mousses sans aucun stress."], ["<b>Semaine 6</b>", "Introduction des 8 Corydoras + 1 Ancistrus + 3 à 5 Neritina.", "Prise en charge du nettoyage du sol et des vitres."], ["<b>Semaine 8</b>", "Introduction des 30 néons bleus, achetés en une seule fois chez le même vendeur.", "Peuplement de la zone de nage intermédiaire : un banc complété plus tard se mélange mal."], ["<b>Semaine 12</b>", "Introduction des 6 Otocinclus. <b>Dernière introduction : le peuplement est complet.</b>", "Ils arrivent en dernier parce qu'ils ont besoin d'un bac déjà couvert de biofilm et d'algues pour s'alimenter."]];
+const NOURRIR  = [["<b>Micro-granulés</b>", "Une pincée fine, l'équivalent d'un demi-ongle du petit doigt, une seule fois par jour.", "En journée, lumière allumée, pour les néons — distribués en pleine eau au-dessus de la zone dégagée. Tout doit être consommé en <b>deux minutes</b>."], ["<b>Pastilles de fond</b>", "Une pastille entière, un jour sur deux.", "À l'extinction des feux, déposée dans la zone de sable dégagée, pour les Corydoras. Les crevettes viendront la finir dans la nuit."], ["<b>Pastilles d'algues</b>", "Une demi-pastille, un jour sur deux ; une entière, les Amano en prenant leur part.", "Le soir, pour l'Ancistrus — et pour les Otocinclus dès que le bac n'a plus assez d'algues à brouter."], ["<b>Légume blanchi</b>", "Une rondelle de courgette de 1 cm, une fois par semaine.", "Pour les Otocinclus, lestée d'une fourchette ou d'une pierre. <b>Retirez-la le lendemain matin</b> : passé 24 h elle se décompose et charge l'eau."], ["<b>Artémias congelées</b>", "Un demi-cube pour tout le bac.", "Le samedi. Décongelez dans un peu d'eau du bac, puis <b>rincez dans une passoire fine et jetez le jus</b> : il est chargé en phosphates et nourrit les algues."], ["<b>Crevettes et escargots</b>", "Rien de spécifique.", "Ils vivent du biofilm, des feuilles de catappa en décomposition et des restes. Une colonie qu'on nourrit à part est une colonie qu'on surnourrit."]];
+const PANNES   = [["<b>NO2 détectable après introduction</b>", "Colonie bactérienne dépassée : population ajoutée trop vite ou filtre nettoyé trop agressivement.", "Arrêter toute nourriture 48 h, changer 20 % d'eau par jour jusqu'au retour à 0, ne rien introduire de nouveau pendant deux semaines."], ["<b>Algues filamenteuses vertes</b>", "Éclairage trop long ou excès de nitrates.", "Vérifier le programmateur (8 h strictes), retirer les filaments à la main en les enroulant sur une brosse à dents, augmenter les flottantes, réduire la nourriture."], ["<b>Eau verte ou voile blanc</b>", "Bloom bactérien du démarrage (voile) ou algues en suspension (vert).", "Le voile blanc des premières semaines disparaît seul : ne rien faire. Pour l'eau verte, occulter le bac 3 jours et changer 30 % d'eau."], ["<b>Points blancs sur les poissons</b>", "Ichtyophthirius, souvent après un coup de froid ou un ajout mal acclimaté.", "Monter la température à 28-29 °C progressivement. <b>Attention :</b> la plupart des traitements du commerce contiennent du cuivre et tueront les crevettes — vérifier l'étiquette, ou traiter en bac séparé."], ["<b>Crevettes immobiles, mortes après une mue</b>", "GH trop bas ou variation brutale après un gros changement d'eau.", "Tester le GH (viser 7-8), revenir à des changements d'eau modérés et réguliers."], ["<b>Coupure de courant</b>", "Filtre et chauffage à l'arrêt.", "Moins de 4 h : ne rien faire. Au-delà, sortir les masses filtrantes et les garder immergées dans un seau d'eau du bac. Au retour du courant, ne pas nourrir pendant 24 h."]];
+const ALGUES   = [["<b>Voile blanchâtre en suspension</b>", "Jours 3 à 15", "Bloom bactérien, classique d'un bac en rodage. <b>Rien du tout</b> : il se dissipe seul. Un changement d'eau le relance."], ["<b>Dépôt brun poudreux</b>", "Semaines 3 à 8", "Diatomées. Passez l'aimant sur la vitre avant pour voir dans le bac, et laissez le reste. Les Neritina et l'Ancistrus, arrivés en semaine 6, en viennent à bout en quelques jours. C'est aussi ce dépôt qui nourrira les Otocinclus à leur arrivée : n'en éliminez pas la moindre trace avant la semaine 12."], ["<b>Voile vert sur la vitre</b>", "Dès le 2ᵉ mois", "Normal et permanent dans tout bac équilibré. Aimant chaque semaine sur les faces avant et latérales ; laissez la vitre arrière se couvrir, c'est du pâturage pour les crevettes."], ["<b>Filaments verts</b>", "À partir du 3ᵉ mois", "Le seul signal qui demande une correction : éclairage trop long ou nourriture excédentaire. Voir la section 19."], ["<b>Voile bleu-vert glissant, à odeur marquée</b>", "Rare", "Ce n'est pas une algue mais une cyanobactérie, favorisée par un coin sans courant. Retirez-la au siphon, orientez la buse vers la zone morte, réduisez la nourriture. Aucun produit : ils sont tous nocifs pour les crevettes."]];
+const MOIS     = [["<b>Mois 1</b>", "Cryptocoryne en pleine fonte, feuilles qui se liquéfient. Voile blanc dissipé. Crevettes discrètes, souvent invisibles la première semaine.", "Rien sur les Crypto : la souche est vivante. Testez chaque semaine. Ne cherchez pas les crevettes, elles sont dans la mousse."], ["<b>Mois 2</b>", "Dépôt brun de diatomées à son maximum, puis reflux après l'arrivée des Neritina et de l'Ancistrus. Néons en semaine 8, Otocinclus en semaine 12. Premiers stolons de Vallisneria.", "Aimant sur la vitre avant uniquement. Laissez la vitre arrière et les feuilles se couvrir : c'est le garde-manger des Otocinclus. Toujours pas de taille."], ["<b>Mois 3</b>", "Le bac « prend » : Vallisneria qui atteint la surface, Crypto qui repart de la souche, flottantes à doubler chaque semaine. Première femelle grainée possible.", "Premier retrait de flottantes devenu hebdomadaire. Passage aux tests tous les quinze jours si tout est stable."], ["<b>Mois 4</b>", "Premiers juvéniles de crevettes visibles sur les feuilles de catappa. Mousse qui s'épaissit. Éventuels premiers filaments verts.", "Vérifiez la durée d'éclairage avant toute autre chose. Première taille de mousse si elle dépasse 3 à 4 cm."], ["<b>Mois 5 à 6</b>", "Rideau de Vallisneria formé, colonie de crevettes qui décolle nettement, bac visuellement abouti. Le pH s'est stabilisé sous l'effet de la racine et de la catappa.", "Première grande taille (section 16), premier retrait des crevettes les moins colorées, contrôle du KH. C'est aussi la fenêtre pour envisager un banc de surface, si vous y revenez."]];
+const CHALEUR  = [["<b>Jusqu'à 27 °C</b>", "Rien d'anormal. Les poissons sont simplement plus actifs et plus voraces.", "Rien. Surveillez au thermomètre indépendant, une fois par jour."], ["<b>27 à 29 °C</b>", "L'oxygène baisse. Les néons se tiennent plus haut, l'Ancistrus sort moins la nuit.", "Galerie entrouverte, buse de sortie orientée vers la surface pour créer un remous franc, éclairage réduit à 5 ou 6 h. Nourriture divisée par deux."], ["<b>29 à 31 °C</b>", "Zone critique pour les crevettes. Poissons en surface, respiration rapide, crevettes immobiles ou au contraire agitées.", "Ventilateur de bureau soufflant <b>en rasant la surface</b> : l'évaporation fait perdre 1 à 3 °C, c'est de loin le moyen le plus efficace. Jeûne complet. Volets fermés dans la pièce."], ["<b>Au-delà de 31 °C</b>", "Mortalité possible en quelques heures, crevettes d'abord.", "Ventilateur en continu, bouteilles d'eau congelée <b>posées dans le meuble ou flottant fermées</b> — jamais de glaçons dans l'eau. Changement d'eau de 10 % avec une eau à 2 °C sous celle du bac, pas plus."]];
+const SECURITE = [{"id": "s01", "html": "<b>La boucle d'égouttement, sur chaque câble.</b> Le fil doit descendre plus bas que la prise avant d'y remonter : l'eau qui coulerait le long du câble tombe au sol au point bas au lieu d'entrer dans la prise. C'est la précaution la plus importante de la liste, et elle est gratuite."}, {"id": "s02", "html": "<b>Multiprise avec interrupteur</b>, fixée au flanc ou au dos du meuble, jamais posée à plat sur le fond."}, {"id": "s03", "html": "Vérifiez au tableau que le circuit est protégé par un <b>différentiel 30 mA</b>."}, {"id": "s04", "html": "<b>Le programmateur ne pilote que la rampe LED.</b> Ni le filtre ni le chauffage, qui doivent tourner en continu."}, {"id": "s05", "html": "<b>Le chauffage ne se branche jamais hors de l'eau.</b> Sur le Rio il est logé dans le boîtier du filtre : débranchez-le au début du changement d'eau, rebranchez une fois le niveau remonté."}, {"id": "s06", "html": "Avant toute intervention un peu longue les mains dans l'eau, coupez la multiprise."}, {"id": "s07", "html": "<b>Le sol doit être plan.</b> Une cale sous un angle du meuble concentre la contrainte sur un point de la vitre inférieure : c'est ainsi que les bacs cassent. Vérifiez au niveau à bulle avant de remplir, dans les deux sens."}, {"id": "s08", "html": "Sur un plancher bois, orientez le meuble perpendiculairement aux solives et, dans le doute, contre un mur porteur."}, {"id": "s09", "html": "<b>Remplissez en deux temps :</b> un tiers, puis vérification du niveau et de l'absence de suintement aux angles, puis le reste. Une fois plein, le bac ne se déplace plus, même de quelques centimètres."}, {"id": "s10", "html": "Un <b>détecteur de fuite d'eau</b> à quelques euros, posé dans le meuble, prévient d'un débordement de siphonnage."}, {"id": "s11", "html": "Contrôlez une fois par an les joints silicone intérieurs : un décollement se voit comme une ligne sombre le long de l'angle."}, {"id": "s12", "html": "<b>Prévenez votre assureur habitation.</b> La garantie dégâts des eaux couvre rarement d'office un aquarium de plus de 100 litres : un coup de fil règle la question."}];
+const EAU      = [{"id": "e1", "t": "Préparer l'eau neuve", "d": "Deux seaux de 15 L d'eau du robinet, conditionneur dosé sur le volume du seau, température à ± 2 °C de celle du bac."}, {"id": "e2", "t": "Couper le chauffage", "d": "Débrancher le chauffage et la pompe avant de descendre le niveau : ils ne doivent jamais tourner à l'air libre."}, {"id": "e3", "t": "Siphonner la zone dégagée", "d": "Effleurer le sable de la clairière sans y enfoncer la cloche, un tiers du sol par semaine."}, {"id": "e4", "t": "Contrôler le seau usagé", "d": "Regarder le fond du seau avant de le vider : les crevettes juvéniles s'y retrouvent souvent."}, {"id": "e5", "t": "Remplir doucement", "d": "Verser sur une assiette posée sur le sable pour ne pas creuser ni troubler."}, {"id": "e6", "t": "Rebrancher", "d": "Chauffage puis pompe, une fois le niveau revenu."}, {"id": "e7", "t": "Engrais liquide", "d": "ProFito après le changement d'eau, jamais avant."}];
+const KIT      = [["Cuve", "Rio 180 LED — 101 × 41 × 50 cm, 180 L bruts, environ 150 L d'eau réelle"], ["Éclairage", "MultiLux LED 100 — non réglable en intensité, d'où le programmateur sur 8 h"], ["Filtre", "Bioflow M interne, pompe Eccoflow 600 (600 L/h)"], ["Chauffage", "AquaHeat Pro 200, logé dans le filtre — d'où le thermomètre indépendant"], ["Poids en charge", "environ 250 kg une fois l'eau, le sable et les pierres en place"]];
+const JALONS = [
+  {sem:4,  cle:"Neocaridina"},
+  {sem:5,  cle:"Amano"},
+  {sem:6,  cle:"Corydoras"},
+  {sem:6,  cle:"Ancistrus"},
+  {sem:6,  cle:"Neritina"},
+  {sem:8,  cle:"Néon"},
+  {sem:12, cle:"Otocinclus"}
+];
 
 const TACHES_INIT = [
   {nom:"Changement d'eau (45 L)",        periode:7,   fait:"", aide:14},
@@ -2593,7 +2671,7 @@ function vide(){
   return {reglages:{miseEnEau:"", volume:150, chgt:45},
     releves:[], population:JSON.parse(JSON.stringify(POP_INIT)),
     depenses:[], taches:JSON.parse(JSON.stringify(TACHES_INIT)), journal:[],
-    montage:{}, courses:{}};
+    montage:{}, courses:{}, eau:{}, securite:{}};
 }
 function charger(){
   try{
@@ -2670,10 +2748,10 @@ function rendreBord(){
 
   const al = [];
   if(r) SEUILS.forEach(s => { if(etat(s, r[s.id]) === "mal") al.push(s); });
-  $("#alertes").innerHTML = al.length
+  $("#alertes").innerHTML = alerteChaleur() + (al.length
     ? '<div class="bandeau"><b>À traiter :</b> ' +
       al.map(s => esc(s.nom + " à " + r[s.id] + " " + s.unite)).join(" · ") +
-      '<br><button data-guide="' + al[0].aide + '">Que faire — voir le guide</button></div>' : "";
+      '<br><button data-guide="' + al[0].aide + '">Que faire — voir le guide</button></div>' : "");
 
   $("#pastilles").innerHTML = SEUILS.map(s => {
     const v = r ? r[s.id] : null, e = etat(s,v);
@@ -2960,6 +3038,8 @@ document.addEventListener("change", e => {
   if(d.entre !== undefined){ D.population[+d.entre].entre = t.value; sauver(); }
   if(d.montage !== undefined){ D.montage[d.montage] = t.checked; sauver(); rendreEntretien(); }
   if(d.course !== undefined){ D.courses[d.course] = t.checked; sauver(); rendreBudget(); }
+  if(d.eau !== undefined){ D.eau = D.eau || {}; D.eau[d.eau] = t.checked; sauver(); rendreEau(); }
+  if(d.secu !== undefined){ D.securite = D.securite || {}; D.securite[d.secu] = t.checked; sauver(); rendreKit(); }
 });
 
 /* ---------- guide ---------- */
@@ -2986,7 +3066,169 @@ document.addEventListener("change", e => {
   });
 })();
 
-function tout(){ rendreBord(); rendreParam(); rendrePop(); rendreBudget(); rendreEntretien(); rendreDonnees(); }
+
+/* ---------- semaine en cours ---------- */
+function semaine(){
+  const me = D.reglages.miseEnEau;
+  if(!me) return null;
+  const j = joursEntre(me, auj());
+  return j < 0 ? null : Math.floor(j/7) + 1;
+}
+function iso(base, jours){
+  const d = new Date(base); d.setDate(d.getDate() + jours);
+  return d.toISOString().slice(0,10);
+}
+
+/* ---------- bord : où en est le bac ---------- */
+function rendreOuEnEst(){
+  const s = semaine(), c = $("#ouEnEst");
+  if(!s){ c.innerHTML = '<p class="vide">Renseignez la date de mise en eau pour suivre la chronologie.</p>'; return; }
+  const mois = Math.min(MOIS.length, Math.max(1, Math.ceil(s/4.34)));
+  const chrono = MOIS.map((r,i) => {
+    const cl = (i+1) === mois ? "ici" : ((i+1) < mois ? "passe" : "");
+    return '<div class="et ' + cl + '"><b>' + r[0] + "</b><span>" + (cl === "ici" ? r[1] : "") + "</span></div>";
+  }).join("");
+  const alg = ALGUES.filter(r => {
+    const m = /(\d+)\s*(?:à|-)\s*(\d+)/.exec(r[1] || "");
+    if(!m) return false;
+    const j = joursEntre(D.reglages.miseEnEau, auj());
+    return j >= +m[1] && j <= +m[2];
+  });
+  c.innerHTML = '<p style="margin:0 0 9px; font-size:13.5px"><b>Semaine ' + s + "</b> — " +
+    (MOIS[mois-1] ? MOIS[mois-1][2] : "") + "</p>" +
+    '<div class="chrono">' + chrono + "</div>" +
+    (alg.length ? '<p style="margin:10px 0 0; font-size:13px"><b>Attendu en ce moment :</b> ' +
+      alg.map(a => a[0] + " — " + a[2]).join(" · ") + "</p>" : "");
+}
+
+/* ---------- tests : verdict de rodage ---------- */
+function rendreRodage(){
+  const c = $("#rodage");
+  const noPoissons = D.population.every(p => !p.entre);
+  if(!noPoissons){ c.innerHTML = ""; return; }
+  const avecNo2 = D.releves.filter(r => r.no2 !== "" && r.no2 != null);
+  if(!avecNo2.length){
+    c.innerHTML = '<div class="verdict att2">Rodage en cours. Testez NO2 chaque semaine : c\'est lui qui donne le feu vert.</div>';
+    return;
+  }
+  const pic = avecNo2.some(r => Number(r.no2) > 0.1);
+  const der = avecNo2[avecNo2.length-1];
+  const zero = Number(der.no2) === 0;
+  const zerosSuite = [];
+  for(let i = avecNo2.length-1; i >= 0 && Number(avecNo2[i].no2) === 0; i--) zerosSuite.push(avecNo2[i]);
+  if(pic && zero && zerosSuite.length >= 2){
+    c.innerHTML = '<div class="verdict ok"><b>Cycle terminé.</b> Le pic de nitrites a eu lieu et NO2 est revenu à 0 sur ' +
+      zerosSuite.length + ' relevés. Vous pouvez commencer les introductions, en suivant le calendrier.</div>';
+  }else if(pic && zero){
+    c.innerHTML = '<div class="verdict att"><b>Presque.</b> Le pic est passé et NO2 est à 0, mais confirmez sur un second relevé avant d\'introduire quoi que ce soit.</div>';
+  }else if(pic){
+    c.innerHTML = '<div class="verdict att"><b>Pic de nitrites en cours</b> (' + der.no2 +
+      ' mg/L). C\'est le signe que le cycle démarre. Aucun animal tant que ce n\'est pas revenu à 0.</div>';
+  }else{
+    c.innerHTML = '<div class="verdict att2">NO2 encore à 0 et jamais monté : le cycle n\'a pas commencé. Sans source d\'ammoniaque, rien ne se passera — voir la section rodage du guide.</div>';
+  }
+}
+
+/* ---------- vivant : calendrier daté ---------- */
+function rendreCalendrier(){
+  const c = $("#calendrier"), me = D.reglages.miseEnEau;
+  if(!me){ c.innerHTML = '<p class="vide">Renseignez la date de mise en eau pour dater le calendrier.</p>'; return; }
+  const s = semaine() || 0;
+  const lignes = JALONS.map(j => {
+    const p = D.population.find(x => x.nom.toLowerCase().indexOf(j.cle.toLowerCase()) !== -1);
+    const date = iso(me, (j.sem-1)*7);
+    const fait = p && p.entre;
+    const cl = fait ? "passe" : (j.sem === s ? "ici" : "");
+    return '<div class="et ' + cl + '"><b>Semaine ' + j.sem + " · " + frDate(date) + "</b><span>" +
+      (p ? esc(p.nom) + " ×" + p.prevu : esc(j.cle)) +
+      (fait ? " — introduit le " + frDate(p.entre) : "") + "</span></div>";
+  }).join("");
+  c.innerHTML = '<div class="chrono">' + lignes + "</div>" +
+    '<p style="margin:10px 0 0; font-size:12.5px; color:var(--encre-pale)">Les dates se cochent quand vous renseignez la date d\'entrée dans l\'onglet Animaux.</p>' +
+    '<h3 style="margin-top:14px">Ce que dit le guide</h3><table>' +
+    CAL.map(r => "<tr><td style='width:30%'><b>" + r[0] + "</b></td><td>" + r[1] + "</td></tr>").join("") + "</table>";
+}
+
+/* ---------- entretien : changement d'eau guidé ---------- */
+function rendreEau(){
+  const n = EAU.filter(e => D.eau && D.eau[e.id]).length;
+  $("#avanceEau").textContent = n + " étape" + (n>1?"s":"") + " sur " + EAU.length;
+  $("#listeEau").innerHTML = EAU.map((e,i) =>
+    '<div class="etape' + (D.eau && D.eau[e.id] ? " fait" : "") + '"><label class="t">' +
+    '<input type="checkbox" data-eau="' + e.id + '"' + (D.eau && D.eau[e.id] ? " checked" : "") + ">" +
+    '<span class="n num">' + (i+1) + '</span><span class="c"><b>' + esc(e.t) + "</b><br>" + esc(e.d) +
+    "</span></label></div>").join("");
+}
+$("#bEauFini").addEventListener("click", () => {
+  D.eau = {};
+  const t = D.taches.find(x => x.nom.indexOf("Changement d'eau") === 0);
+  if(t) t.fait = auj();
+  D.journal.push({date:auj(), texte:"Changement d'eau effectué."});
+  sauver(); tout();
+});
+
+/* ---------- entretien : nourrir ---------- */
+const SEM = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
+const PLAN = [
+  ["Lundi","Micro-granulés le matin ; pastille de fond le soir"],
+  ["Mardi","Micro-granulés seulement"],
+  ["Mercredi","Micro-granulés ; pastille d'algues le soir"],
+  ["Jeudi","Micro-granulés seulement"],
+  ["Vendredi","Micro-granulés ; pastille de fond le soir"],
+  ["Samedi","Artémias congelées, décongelées et rincées"],
+  ["Dimanche","Jeûne — rien du tout"]
+];
+function rendreNourrir(){
+  const jd = SEM[new Date().getDay()];
+  $("#planSemaine").innerHTML = PLAN.map(p =>
+    '<div class="jour' + (p[0] === jd ? " auj" : "") + '"><b>' + p[0] + "</b><span>" + p[1] + "</span></div>").join("");
+  $("#rations").innerHTML = "<table>" + NOURRIR.map(r =>
+    "<tr><td style='width:32%'><b>" + r[0] + "</b></td><td>" + r[1] + "</td></tr>").join("") + "</table>";
+}
+
+/* ---------- guide : dépannage ---------- */
+function rendreSos(){
+  const sel = $("#sosChoix");
+  if(sel.options.length <= 1)
+    sel.innerHTML = '<option value="">Choisir un symptôme…</option>' +
+      PANNES.map((p,i) => '<option value="' + i + '">' + p[0].replace(/<[^>]+>/g,"") + "</option>").join("");
+  $("#tableChaleur").innerHTML = "<table>" + CHALEUR.map(r =>
+    "<tr><td style='width:30%'><b>" + r[0] + "</b></td><td>" + r[2] + "</td></tr>").join("") + "</table>";
+}
+document.addEventListener("change", e => {
+  if(e.target.id === "sosChoix"){
+    const v = e.target.value;
+    $("#sosRep").innerHTML = v === "" ? "" :
+      "<p style='margin:0 0 6px'><b>Cause probable.</b> " + PANNES[+v][1] + "</p>" +
+      "<p style='margin:0'><b>Que faire, dans l'ordre.</b> " + PANNES[+v][2] + "</p>";
+  }
+});
+
+/* ---------- données : kit et sécurité ---------- */
+function rendreKit(){
+  $("#kit").innerHTML = "<table>" + KIT.map(r =>
+    "<tr><td style='width:34%'><b>" + esc(r[0]) + "</b></td><td>" + esc(r[1]) + "</td></tr>").join("") + "</table>";
+  const n = SECURITE.filter(s => D.securite && D.securite[s.id]).length;
+  $("#listeSecurite").innerHTML =
+    '<p class="avance">' + n + " sur " + SECURITE.length + " vérifié" + (n>1?"s":"") + "</p>" +
+    SECURITE.map(s => '<label class="coche' + (D.securite && D.securite[s.id] ? " fait" : "") +
+      '"><input type="checkbox" data-secu="' + s.id + '"' + (D.securite && D.securite[s.id] ? " checked" : "") +
+      "><span>" + s.html + "</span></label>").join("");
+}
+
+/* ---------- alerte chaleur sur le bord ---------- */
+function alerteChaleur(){
+  const r = dernier();
+  if(!r || r.temp === "" || r.temp == null) return "";
+  const t = Number(r.temp);
+  if(t < 27) return "";
+  const l = CHALEUR.find(x => /(\d+)\s*à\s*(\d+)/.test(x[0]) &&
+    t >= +/(\d+)\s*à\s*(\d+)/.exec(x[0])[1] && t <= +/(\d+)\s*à\s*(\d+)/.exec(x[0])[2]) || CHALEUR[CHALEUR.length-1];
+  return '<div class="bandeau"><b>' + t.toFixed(1).replace(".", ",") + " °C — " + l[0] + ".</b> " + l[2] + "</div>";
+}
+
+function tout(){ rendreBord(); rendreParam(); rendrePop(); rendreBudget(); rendreEntretien(); rendreDonnees();
+  rendreOuEnEst(); rendreRodage(); rendreCalendrier(); rendreEau(); rendreNourrir(); rendreSos(); rendreKit(); }
 $("#dDate").value = auj();
 tout();
 </script>
