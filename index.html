@@ -162,7 +162,10 @@ td.r,th.r{text-align:right; padding-right:0}
 .detail .po{font-size:11.5px; color:var(--encre-pale); align-self:center}
 .detail .ref{font-size:11.5px; color:var(--encre-pale)}
 .detail .ref.plus{color:var(--ambre)} .detail .ref.moins{color:var(--mousse)}
-.detail .racheter{align-self:flex-start; padding:6px 10px; font-size:12.5px}
+.detail .racheter, .detail .coller{align-self:flex-start; padding:6px 10px; font-size:12.5px}
+.detail .lienProduit{font-size:12.5px; color:var(--eau); word-break:break-all}
+#collage{position:relative; background:var(--carte); border:1px solid var(--trait); border-radius:var(--r); padding:12px; margin-bottom:12px}
+#collage textarea{min-height:110px}
 .detail .photoBtn{display:inline-block; text-align:center; padding:7px 10px; font-size:12.5px; cursor:pointer}
 .detail .ph2{display:flex; gap:8px; align-items:flex-start}
 .detail .ph2 img{width:84px; height:64px; object-fit:cover; border-radius:6px}
@@ -437,6 +440,16 @@ nav button.on{color:var(--eau); box-shadow:inset 0 2px 0 var(--eau)}
   <div class="pan" id="pan-courses">
     <p class="avance" id="avanceCourses"></p>
     <div class="carte" id="listeCourses"></div>
+    <div id="collage" hidden>
+      <p style="margin:0 0 8px; font-size:13px"><b id="collageTitre">Coller une fiche produit</b><br>
+        <span style="color:var(--encre-pale)">Sur la page du produit, sélectionnez le titre et le prix, copiez, puis collez ici.
+        Le lien seul fonctionne aussi.</span></p>
+      <textarea id="collageTexte" placeholder="JBL Sansibar River 10 kg&#10;17,99 €&#10;https://www.zoomalia.com/..."></textarea>
+      <div class="lignebtn">
+        <button class="bp" id="bCollageOk" style="flex:1">Récupérer</button>
+        <button class="bs" id="bCollageNon" style="flex:0 0 90px">Annuler</button>
+      </div>
+    </div>
     <h3>Ajouter un article</h3>
     <div class="carte">
       <div class="champ"><label for="aNom">Ce qu'il vous faut</label><input id="aNom" placeholder="Pince à planter, seau, feuilles de catappa…"></div>
@@ -3162,6 +3175,9 @@ function rendreBudget(){
              '<div class="d2"><input type="text" data-qte="' + it.id + '" value="' + esc(c.qte || "") + '" placeholder="quantité, format">' +
              '<input type="text" data-ou="' + it.id + '" value="' + esc(c.ou || "") + '" placeholder="vendeur"></div>' +
              '<input type="text" data-note="' + it.id + '" value="' + esc(c.note || "") + '" placeholder="référence, remarque…">' +
+             '<input type="url" data-lien="' + it.id + '" value="' + esc(c.lien || "") + '" placeholder="lien de la fiche produit">' +
+             (c.lien ? '<a class="lienProduit" href="' + esc(c.lien) + '" target="_blank" rel="noopener">Ouvrir la fiche produit</a>' : "") +
+             '<button class="bs coller" data-coller="' + it.id + '">Coller une fiche produit</button>' +
              (c.photo ? '<div class="ph2"><img src="' + c.photo + '" alt=""><button class="bmini sup" data-photosup="' + it.id + '">retirer la photo</button></div>'
                       : '<label class="bs photoBtn">Ajouter une photo<input type="file" accept="image/*" data-photo="' + it.id + '" hidden></label>') +
              '<div class="d2"><input type="text" inputmode="decimal" data-ref="' + it.id +
@@ -3287,6 +3303,13 @@ document.addEventListener("click", e => {
     b.parentNode.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
     rendreBudget(); return;
   }
+  if(d.coller !== undefined){
+    let nom = "";
+    groupes().forEach(g => g.items.forEach(it => { if(it.id === d.coller) nom = libelle(it).replace(/<[^>]+>/g,""); }));
+    document.querySelector(".sousong[data-groupe='bud'] button[data-pan='courses']").click();
+    ouvrirCollage(d.coller, nom);
+    return;
+  }
   if(d.renom !== undefined){
     let actuel = "";
     groupes().forEach(g => g.items.forEach(it => { if(it.id === d.renom) actuel = libelle(it).replace(/<[^>]+>/g,""); }));
@@ -3359,6 +3382,10 @@ document.addEventListener("change", e => {
     if(t.value.trim() === "") delete D.ref[d.ref]; else D.ref[d.ref] = t.value.trim();
     sauver(); rendreBudget();
   }
+  if(d.lien !== undefined){
+    const c = coche(d.lien) || {fait:true};
+    c.lien = t.value.trim(); D.courses[d.lien] = c; sauver(); rendreBudget();
+  }
   ["ou","qte","note","achat"].forEach(k => {
     if(d[k] !== undefined){
       const id = d[k], c = coche(id) || {fait:true};
@@ -3370,6 +3397,41 @@ document.addEventListener("change", e => {
   if(d.photo !== undefined && t.files && t.files[0]) chargerPhoto(d.photo, t.files[0]);
   if(d.eau !== undefined){ D.eau = D.eau || {}; D.eau[d.eau] = t.checked; sauver(); rendreEau(); }
   if(d.secu !== undefined){ D.securite = D.securite || {}; D.securite[d.secu] = t.checked; sauver(); rendreKit(); }
+});
+
+/* ---------- collage d'une fiche produit ---------- */
+let collageId = null;
+function ouvrirCollage(id, nom){
+  collageId = id;
+  $("#collageTitre").textContent = "Coller la fiche de : " + nom;
+  $("#collageTexte").value = "";
+  $("#collage").hidden = false;
+  $("#collage").scrollIntoView({block:"center"});
+  $("#collageTexte").focus();
+}
+function analyser(txt){
+  const res = {};
+  const url = txt.match(/https?:\/\/[^\s"'<>]+/);
+  if(url) res.lien = url[0];
+  const prix = txt.match(/(\d{1,4}[.,]\d{2})\s*(?:€|EUR)|(?:€|EUR)\s*(\d{1,4}[.,]\d{2})/i);
+  if(prix) res.prix = (prix[1] || prix[2]).replace(".", ",");
+  const lignes = txt.split(/[\n\r]+/).map(l => l.trim())
+    .filter(l => l && !/^https?:/.test(l) && !/^(\d{1,4}[.,]\d{2})\s*(€|EUR)?$/i.test(l));
+  if(lignes.length) res.nom = lignes[0].slice(0, 90);
+  return res;
+}
+$("#bCollageNon").addEventListener("click", () => { $("#collage").hidden = true; collageId = null; });
+$("#bCollageOk").addEventListener("click", () => {
+  if(!collageId) return;
+  const r = analyser($("#collageTexte").value);
+  if(!r.lien && !r.prix && !r.nom){ alert("Rien de reconnaissable dans ce texte. Collez le titre, le prix ou le lien du produit."); return; }
+  const c = coche(collageId) || {fait:true};
+  if(r.prix) c.prix = r.prix;
+  if(r.lien) c.lien = r.lien;
+  if(r.nom){ D.renom = D.renom || {}; D.renom[collageId] = r.nom;
+             const p = (D.perso||[]).find(x => x.id === collageId); if(p) p.nom = r.nom; }
+  D.courses[collageId] = c;
+  sauver(); $("#collage").hidden = true; collageId = null; rendreBudget();
 });
 
 /* ---------- photos d'articles ---------- */
