@@ -150,9 +150,21 @@ td.r,th.r{text-align:right; padding-right:0}
 .art:last-child{border-bottom:0}
 .art.fait .coche span{color:var(--encre-pale)}
 .art .coche{border-bottom:0}
-.prix{display:grid; grid-template-columns:96px 1fr; gap:6px; padding:0 0 9px 28px; align-items:center}
-.prix input{padding:6px 8px; font-size:13px}
-.prix .po{grid-column:1 / -1; font-size:11.5px; color:var(--encre-pale)}
+.detail{padding:0 0 10px 28px; display:flex; flex-direction:column; gap:6px}
+.detail input{padding:6px 8px; font-size:13px}
+.detail .d2{display:grid; grid-template-columns:1fr 1fr; gap:6px}
+.detail .po{font-size:11.5px; color:var(--encre-pale); align-self:center}
+.detail .ref{font-size:11.5px; color:var(--encre-pale)}
+.detail .ref.plus{color:var(--ambre)} .detail .ref.moins{color:var(--mousse)}
+.detail .photoBtn{display:inline-block; text-align:center; padding:7px 10px; font-size:12.5px; cursor:pointer}
+.detail .ph2{display:flex; gap:8px; align-items:flex-start}
+.detail .ph2 img{width:84px; height:64px; object-fit:cover; border-radius:6px}
+.artligne{display:flex; gap:9px; padding:7px 0; border-bottom:1px solid #EDF3F2; font-size:13px; align-items:flex-start}
+.artligne:last-child{border-bottom:0}
+.artligne img{width:44px; height:34px; object-fit:cover; border-radius:5px; flex:0 0 44px; background:#E9EFEE}
+.artligne .t2{flex:1; min-width:0}
+.artligne .t2 span{display:block; font-size:11.5px; color:var(--encre-pale)}
+.artligne .m2{white-space:nowrap; font-weight:600}
 .etape{padding:9px 0; border-bottom:1px solid var(--trait)}
 .etape:last-child{border-bottom:0}
 .etape .t{display:flex; gap:9px; align-items:flex-start}
@@ -2693,6 +2705,33 @@ function posteDe(groupe, texte){
   if(/cuve|meuble/i.test(texte.replace(/<[^>]+>/g,""))) return "Aquarium + meuble";
   return POSTE_GROUPE[groupe] || "Sol & décors";
 }
+const REFS = [
+  [/cuve rio 180/i, 499],   [/sable clair 20 kg/i, 36.48], [/racine araign/i, 24],
+  [/pierres de lave/i, 8.22], [/pierres plates/i, 0],      [/poster de fond/i, 12],
+  [/phare r/i, 0],          [/scotch repositionnable/i, 4], [/vinaigre blanc/i, 2],
+  [/mallette de tests/i, 78], [/conditionneur/i, 8],        [/programmateur/i, 10],
+  [/thermom/i, 4],          [/multiprise/i, 15],           [/d.tecteur de fuite/i, 15],
+  [/niveau .{0,3}bulle/i, 8],
+  [/vallisneria/i, 16],     [/cryptocoryne/i, 24],         [/mousse de java/i, 15],
+  [/anubias/i, 12],         [/foug.re de java/i, 7],       [/flottantes/i, 6],
+  [/catappa/i, 7.59],       [/billes d.argile/i, 6],       [/engrais racinaire/i, 6.99],
+  [/engrais liquide/i, 4.99], [/pince .{0,3}planter/i, 15.99], [/fil de coton|colle gel/i, 5.99],
+  [/siphon/i, 17.47],       [/aimant/i, 3.99],             [/.puisette/i, 4.99],
+  [/2 seaux/i, 10],         [/tuyau d.air/i, 5.99],        [/ouate biopad/i, 5.67],
+  [/nitrax/i, 13.77],       [/bioplus/i, 3.98],            [/ciseaux courb/i, 8.54],
+  [/tuyau souple 12/i, 5],
+  [/micro-granul/i, 5.39],  [/pastilles de fond/i, 5.29],  [/pastilles d.algues/i, 5.29],
+  [/art.mias/i, 5],
+  [/neocaridina/i, 45],     [/amano/i, 24],                [/corydoras/i, 40],
+  [/ancistrus/i, 8],        [/neritina/i, 12],             [/n.ons bleus/i, 60],
+  [/otocinclus/i, 24]
+];
+function refDe(id, texte){
+  if(D.ref && D.ref[id] !== undefined && D.ref[id] !== "") return nb(D.ref[id]);
+  const t = texte.replace(/<[^>]+>/g, "");
+  for(const [re, v] of REFS) if(re.test(t)) return v;
+  return null;
+}
 function coche(id){
   const v = D.courses[id];
   return (v && typeof v === "object") ? v : (v ? {fait:true} : null);
@@ -2722,7 +2761,7 @@ function vide(){
   return {reglages:{miseEnEau:"", volume:150, chgt:45},
     releves:[], population:JSON.parse(JSON.stringify(POP_INIT)),
     depenses:[], taches:JSON.parse(JSON.stringify(TACHES_INIT)), journal:[],
-    montage:{}, courses:{}, eau:{}, securite:{}, perso:[]};
+    montage:{}, courses:{}, eau:{}, securite:{}, perso:[], ref:{}};
 }
 function charger(){
   try{
@@ -2950,6 +2989,15 @@ function groupes(){
   });
   return g;
 }
+function ecart(id, texte, c){
+  const r = refDe(id, texte), p = c && c.prix ? nb(c.prix) : NaN;
+  if(r == null || !r) return "";
+  if(!isFinite(p)) return '<span class="ref">référence ' + eur(r) + "</span>";
+  const d = p - r;
+  const cl = d > 0.5 ? "plus" : (d < -0.5 ? "moins" : "");
+  return '<span class="ref ' + cl + '">référence ' + eur(r) + " · " +
+    (Math.abs(d) < 0.5 ? "au prix attendu" : eur(Math.abs(d)) + (d > 0 ? " de plus" : " de moins")) + "</span>";
+}
 function rendreBudget(){
   // ---- installation ----
   const inst = D.depenses.filter(d => (d.nature || "install") === "install");
@@ -2963,14 +3011,37 @@ function rendreBudget(){
     }
   }));
   let reel = 0, pmin = 0, pmax = 0;
+  const detail = {};
+  inst.forEach(d => (detail[d.poste] = detail[d.poste] || []).push(
+    {nom:d.article, qte:d.qte, ou:d.ou, date:d.date, prix:nb(d.montant), photo:""}));
+  groupes().forEach(g => g.items.forEach(it => {
+    const c = coche(it.id);
+    if(c && c.prix && isFinite(nb(c.prix))){
+      const p = posteDe(g.titre, it.html);
+      (detail[p] = detail[p] || []).push({nom:it.html.replace(/<[^>]+>/g,""), qte:c.qte, ou:c.ou,
+                                          date:c.date, prix:nb(c.prix), photo:c.photo || ""});
+    }
+  }));
+  const refPoste = {};
+  groupes().forEach(g => g.items.forEach(it => {
+    const v = refDe(it.id, it.html);
+    if(v){ const po = posteDe(g.titre, it.html); refPoste[po] = (refPoste[po]||0) + v; }
+  }));
   const corps = POSTES.map(p => {
     const r = parPoste[p.nom] || 0;
     reel += r; pmin += p.min; pmax += p.max;
     const pct = Math.min(100, p.max ? r/p.max*100 : 0);
+    const lignes = (detail[p.nom] || []).sort((a,b) => (a.date||"").localeCompare(b.date||"")).map(a =>
+      '<div class="artligne">' + (a.photo ? '<img src="' + a.photo + '" alt="">' : '<img alt="">') +
+      '<div class="t2">' + esc(a.nom) + "<span>" +
+      [a.qte, a.ou, a.date ? frDate(a.date) : ""].filter(Boolean).map(esc).join(" · ") +
+      '</span></div><div class="m2 num">' + eur(a.prix) + "</div></div>").join("");
     return '<div class="poste"><div class="l1"><b>' + esc(p.nom) + '</b><span class="num">' + eur(r) +
       '</span></div><div class="l2 num">prévu ' + p.min + " – " + p.max + " €" +
+      (refPoste[p.nom] ? " · référence articles " + eur(refPoste[p.nom]) : "") +
       (r > p.max ? " · dépassé de " + eur(r-p.max) : "") + '</div><div class="barre"><i class="' +
-      (r > p.max ? "depasse" : "") + '" style="width:' + pct.toFixed(0) + '%"></i></div></div>';
+      (r > p.max ? "depasse" : "") + '" style="width:' + pct.toFixed(0) + '%"></i></div>' +
+      (lignes ? '<div style="margin-top:8px">' + lignes + "</div>" : "") + "</div>";
   }).join("");
   const hors = Object.keys(parPoste).filter(k => !POSTES.some(p => p.nom === k));
   const ht = hors.reduce((s,k) => s + parPoste[k], 0); reel += ht;
@@ -3045,10 +3116,18 @@ function rendreBudget(){
       return '<div class="art' + (c ? " fait" : "") + '"><label class="coche"><input type="checkbox" data-course="' +
         it.id + '"' + (c ? " checked" : "") + "><span>" + it.html + "</span></label>" +
         (it.perso ? '<button class="bmini sup" data-sup-course="' + it.id + '" style="float:right;margin-top:-30px">×</button>' : "") +
-        (c ? '<div class="prix"><input type="text" inputmode="decimal" data-prix="' + it.id +
-             '" value="' + (c.prix || "") + '" placeholder="prix €">' +
-             '<input type="text" data-ou="' + it.id + '" value="' + esc(c.ou || "") + '" placeholder="vendeur">' +
-             '<span class="po">' + esc(posteDe(g.titre, it.html)) + "</span></div>" : "") + "</div>";
+        (c ? '<div class="detail">' +
+             '<div class="d2"><input type="text" inputmode="decimal" data-prix="' + it.id + '" value="' + (c.prix || "") + '" placeholder="prix €">' +
+             '<input type="date" data-achat="' + it.id + '" value="' + (c.date || "") + '"></div>' +
+             '<div class="d2"><input type="text" data-qte="' + it.id + '" value="' + esc(c.qte || "") + '" placeholder="quantité, format">' +
+             '<input type="text" data-ou="' + it.id + '" value="' + esc(c.ou || "") + '" placeholder="vendeur"></div>' +
+             '<input type="text" data-note="' + it.id + '" value="' + esc(c.note || "") + '" placeholder="référence, remarque…">' +
+             (c.photo ? '<div class="ph2"><img src="' + c.photo + '" alt=""><button class="bmini sup" data-photosup="' + it.id + '">retirer la photo</button></div>'
+                      : '<label class="bs photoBtn">Ajouter une photo<input type="file" accept="image/*" data-photo="' + it.id + '" hidden></label>') +
+             '<div class="d2"><input type="text" inputmode="decimal" data-ref="' + it.id +
+             '" value="' + (D.ref && D.ref[it.id] !== undefined ? D.ref[it.id] : "") +
+             '" placeholder="prix de référence €"><span class="po">' + esc(posteDe(g.titre, it.html)) + "</span></div>" +
+             ecart(it.id, it.html, c) + "</div>" : "") + "</div>";
     }).join("") + "</div>").join("");
 }
 
@@ -3166,6 +3245,9 @@ document.addEventListener("click", e => {
     b.parentNode.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
     rendreBudget(); return;
   }
+  if(d.photosup !== undefined){
+    const c = coche(d.photosup); if(c){ c.photo = ""; D.courses[d.photosup] = c; sauver(); rendreBudget(); }
+  }
   if(d.supCourse !== undefined){
     D.perso = (D.perso||[]).filter(x => x.id !== d.supCourse);
     delete D.courses[d.supCourse]; sauver(); tout();
@@ -3188,13 +3270,44 @@ document.addEventListener("change", e => {
     const c = coche(d.prix) || {fait:true};
     c.prix = t.value.trim(); D.courses[d.prix] = c; sauver(); rendreBudget();
   }
-  if(d.ou !== undefined){
-    const c = coche(d.ou) || {fait:true};
-    c.ou = t.value.trim(); D.courses[d.ou] = c; sauver();
+  if(d.ref !== undefined){
+    D.ref = D.ref || {};
+    if(t.value.trim() === "") delete D.ref[d.ref]; else D.ref[d.ref] = t.value.trim();
+    sauver(); rendreBudget();
   }
+  ["ou","qte","note","achat"].forEach(k => {
+    if(d[k] !== undefined){
+      const id = d[k], c = coche(id) || {fait:true};
+      c[k === "achat" ? "date" : k] = t.value.trim();
+      D.courses[id] = c; sauver();
+      if(k === "achat") rendreBudget();
+    }
+  });
+  if(d.photo !== undefined && t.files && t.files[0]) chargerPhoto(d.photo, t.files[0]);
   if(d.eau !== undefined){ D.eau = D.eau || {}; D.eau[d.eau] = t.checked; sauver(); rendreEau(); }
   if(d.secu !== undefined){ D.securite = D.securite || {}; D.securite[d.secu] = t.checked; sauver(); rendreKit(); }
 });
+
+/* ---------- photos d'articles ---------- */
+function chargerPhoto(id, fichier){
+  const l = new FileReader();
+  l.onload = () => {
+    const im = new Image();
+    im.onload = () => {
+      const L = 420, ech = Math.min(1, L / im.width);
+      const cv = document.createElement("canvas");
+      cv.width = Math.round(im.width * ech); cv.height = Math.round(im.height * ech);
+      cv.getContext("2d").drawImage(im, 0, 0, cv.width, cv.height);
+      const c = coche(id) || {fait:true};
+      c.photo = cv.toDataURL("image/jpeg", 0.6);
+      D.courses[id] = c;
+      try{ localStorage.setItem(CLE, JSON.stringify(D)); rendreBudget(); }
+      catch(e){ c.photo = ""; alert("La photo est trop lourde pour le stockage du navigateur. Essayez une image plus petite."); }
+    };
+    im.src = l.result;
+  };
+  l.readAsDataURL(fichier);
+}
 
 /* ---------- guide ---------- */
 (function(){
