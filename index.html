@@ -373,8 +373,10 @@ nav button.on{color:var(--eau); box-shadow:inset 0 2px 0 var(--eau)}
 <section id="s-budget">
   <h2>Budget</h2>
   <div class="sousong" data-groupe="bud">
-    <button data-pan="depenses" class="on">Dépenses</button>
+    <button data-pan="depenses" class="on">Installation</button>
+    <button data-pan="courant">Fonctionnement</button>
     <button data-pan="courses">Liste de courses</button>
+    <button data-pan="journalDep">Historique</button>
   </div>
   <div class="pan on" id="pan-depenses">
     <div class="carte" id="synthBudget"></div>
@@ -389,9 +391,25 @@ nav button.on{color:var(--eau); box-shadow:inset 0 2px 0 var(--eau)}
         <div class="champ"><label for="dPoste">Poste</label><select id="dPoste"></select></div>
         <div class="champ"><label for="dOu">Vendeur</label><input id="dOu" placeholder="Zoomalia, animalerie…"></div>
       </div>
+      <div class="deux">
+        <div class="champ"><label for="dNature">Nature</label>
+          <select id="dNature"><option value="install">Installation — achat unique</option><option value="courant">Fonctionnement — récurrent</option></select></div>
+        <div class="champ"><label for="dQte">Quantité</label><input id="dQte" placeholder="2 sacs, 250 ml…"></div>
+      </div>
       <button class="bp" id="bAjoutDep">Enregistrer</button>
     </div>
-    <h3>Dépenses</h3>
+  </div>
+  <div class="pan" id="pan-courant">
+    <div class="carte" id="synthCourant"></div>
+    <h3>Ce que le guide prévoit par an</h3>
+    <div class="carte" id="tableRecurrent"></div>
+  </div>
+  <div class="pan" id="pan-journalDep">
+    <div class="sousong" style="margin-bottom:10px">
+      <button data-periode="tout" class="on">Tout</button>
+      <button data-periode="annee">Cette année</button>
+      <button data-periode="mois">Ce mois</button>
+    </div>
     <div class="carte" id="listeDep"></div>
   </div>
   <div class="pan" id="pan-courses">
@@ -2662,6 +2680,7 @@ const CHALEUR  = [["<b>Jusqu'à 27 °C</b>", "Rien d'anormal. Les poissons sont 
 const SECURITE = [{"id": "s01", "html": "<b>La boucle d'égouttement, sur chaque câble.</b> Le fil doit descendre plus bas que la prise avant d'y remonter : l'eau qui coulerait le long du câble tombe au sol au point bas au lieu d'entrer dans la prise. C'est la précaution la plus importante de la liste, et elle est gratuite."}, {"id": "s02", "html": "<b>Multiprise avec interrupteur</b>, fixée au flanc ou au dos du meuble, jamais posée à plat sur le fond."}, {"id": "s03", "html": "Vérifiez au tableau que le circuit est protégé par un <b>différentiel 30 mA</b>."}, {"id": "s04", "html": "<b>Le programmateur ne pilote que la rampe LED.</b> Ni le filtre ni le chauffage, qui doivent tourner en continu."}, {"id": "s05", "html": "<b>Le chauffage ne se branche jamais hors de l'eau.</b> Sur le Rio il est logé dans le boîtier du filtre : débranchez-le au début du changement d'eau, rebranchez une fois le niveau remonté."}, {"id": "s06", "html": "Avant toute intervention un peu longue les mains dans l'eau, coupez la multiprise."}, {"id": "s07", "html": "<b>Le sol doit être plan.</b> Une cale sous un angle du meuble concentre la contrainte sur un point de la vitre inférieure : c'est ainsi que les bacs cassent. Vérifiez au niveau à bulle avant de remplir, dans les deux sens."}, {"id": "s08", "html": "Sur un plancher bois, orientez le meuble perpendiculairement aux solives et, dans le doute, contre un mur porteur."}, {"id": "s09", "html": "<b>Remplissez en deux temps :</b> un tiers, puis vérification du niveau et de l'absence de suintement aux angles, puis le reste. Une fois plein, le bac ne se déplace plus, même de quelques centimètres."}, {"id": "s10", "html": "Un <b>détecteur de fuite d'eau</b> à quelques euros, posé dans le meuble, prévient d'un débordement de siphonnage."}, {"id": "s11", "html": "Contrôlez une fois par an les joints silicone intérieurs : un décollement se voit comme une ligne sombre le long de l'angle."}, {"id": "s12", "html": "<b>Prévenez votre assureur habitation.</b> La garantie dégâts des eaux couvre rarement d'office un aquarium de plus de 100 litres : un coup de fil règle la question."}];
 const EAU      = [{"id": "e1", "t": "Préparer l'eau neuve", "d": "Deux seaux de 15 L d'eau du robinet, conditionneur dosé sur le volume du seau, température à ± 2 °C de celle du bac."}, {"id": "e2", "t": "Couper le chauffage", "d": "Débrancher le chauffage et la pompe avant de descendre le niveau : ils ne doivent jamais tourner à l'air libre."}, {"id": "e3", "t": "Siphonner la zone dégagée", "d": "Effleurer le sable de la clairière sans y enfoncer la cloche, un tiers du sol par semaine."}, {"id": "e4", "t": "Contrôler le seau usagé", "d": "Regarder le fond du seau avant de le vider : les crevettes juvéniles s'y retrouvent souvent."}, {"id": "e5", "t": "Remplir doucement", "d": "Verser sur une assiette posée sur le sable pour ne pas creuser ni troubler."}, {"id": "e6", "t": "Rebrancher", "d": "Chauffage puis pompe, une fois le niveau revenu."}, {"id": "e7", "t": "Engrais liquide", "d": "ProFito après le changement d'eau, jamais avant."}];
 const KIT      = [["Cuve", "Rio 180 LED — 101 × 41 × 50 cm, 180 L bruts, environ 150 L d'eau réelle"], ["Éclairage", "MultiLux LED 100 — non réglable en intensité, d'où le programmateur sur 8 h"], ["Filtre", "Bioflow M interne, pompe Eccoflow 600 (600 L/h)"], ["Chauffage", "AquaHeat Pro 200, logé dans le filtre — d'où le thermomètre indépendant"], ["Poids en charge", "environ 250 kg une fois l'eau, le sable et les pierres en place"]];
+const RECURRENT = [["<b>Éclairage</b>", "Deux tubes MultiLux, environ 45 W au total, 8 h par jour.", "30 à 35 €"], ["<b>Pompe Eccoflow</b>", "7 W en continu, 24 h sur 24.", "15 €"], ["<b>Chauffage</b>", "Le poste le plus variable : il ne consomme que l'écart entre la pièce et les 25 °C du bac.", "25 à 50 €"], ["<b>Ouate filtrante</b>", "Remplacée toutes les 1 à 2 semaines : environ deux boîtes de bioPad M.", "30 à 40 €"], ["<b>Autres masses</b>", "Mousse Nitrax et remplacement d'une mousse bleue par roulement.", "20 à 25 €"], ["<b>Nourriture</b>", "Les quatre références de la liste, qui durent chacune plusieurs mois.", "30 à 40 €"], ["<b>Tests et conditionneur</b>", "Recharges de réactifs et anti-chlore, à raison d'un changement d'eau par semaine.", "35 à 50 €"], ["<b>Catappa et engrais</b>", "Feuilles à remplacer tous les mois, engrais liquide hebdomadaire, billes d'argile.", "25 à 35 €"], ["<b>Eau</b>", "Environ 1,5 m³ prélevé au robinet sur l'année.", "6 à 8 €"]];
 const POSTE_GROUPE = {
   "CUVE ET DÉCOR":"Sol & décors",
   "TECHNIQUE ET MESURE":"Technique & tests",
@@ -2932,8 +2951,10 @@ function groupes(){
   return g;
 }
 function rendreBudget(){
+  // ---- installation ----
+  const inst = D.depenses.filter(d => (d.nature || "install") === "install");
   const parPoste = {};
-  D.depenses.forEach(d => parPoste[d.poste] = (parPoste[d.poste]||0) + nb(d.montant));
+  inst.forEach(d => parPoste[d.poste] = (parPoste[d.poste]||0) + nb(d.montant));
   groupes().forEach(g => g.items.forEach(it => {
     const c = coche(it.id);
     if(c && c.prix && isFinite(nb(c.prix))){
@@ -2953,25 +2974,65 @@ function rendreBudget(){
   }).join("");
   const hors = Object.keys(parPoste).filter(k => !POSTES.some(p => p.nom === k));
   const ht = hors.reduce((s,k) => s + parPoste[k], 0); reel += ht;
+  const reste = pmin - reel;
   $("#synthBudget").innerHTML = corps +
     (hors.length ? '<div class="poste"><div class="l1"><b>Hors postes</b><span class="num">' + eur(ht) + "</span></div></div>" : "") +
     '<div class="total"><b>Dépensé</b><span class="num">' + eur(reel) + "</span></div>" +
-    '<div style="text-align:right;font-size:12px;color:var(--encre-pale)" class="num">prévisionnel ' + pmin + " – " + pmax + " €</div>";
+    '<div style="text-align:right;font-size:12px;color:var(--encre-pale)" class="num">prévisionnel ' + pmin + " – " + pmax + " €" +
+    (reste > 0 ? " · reste environ " + eur(reste) + " à engager" : "") + "</div>";
 
   const sel = $("#dPoste");
   if(!sel.options.length) sel.innerHTML = POSTES.map(p => "<option>" + esc(p.nom) + "</option>").join("");
 
-  $("#listeDep").innerHTML = D.depenses.length
-    ? "<table><tr><th>Date</th><th>Article</th><th class='r'>Montant</th><th></th></tr>" +
-      D.depenses.slice().reverse().map((d,i) => {
-        const idx = D.depenses.length-1-i;
+  // ---- fonctionnement ----
+  const cour = D.depenses.filter(d => d.nature === "courant");
+  const an = auj().slice(0,4), mois = auj().slice(0,7);
+  const totAn = cour.filter(d => d.date.slice(0,4) === an).reduce((s,d) => s + nb(d.montant), 0);
+  const totMois = cour.filter(d => d.date.slice(0,7) === mois).reduce((s,d) => s + nb(d.montant), 0);
+  const totTout = cour.reduce((s,d) => s + nb(d.montant), 0);
+  const parMois = {};
+  cour.forEach(d => parMois[d.date.slice(0,7)] = (parMois[d.date.slice(0,7)]||0) + nb(d.montant));
+  const cles = Object.keys(parMois).sort();
+  const moyenne = cles.length ? totTout / cles.length : 0;
+  const pct = Math.min(100, totAn/215*100);
+  $("#synthCourant").innerHTML =
+    '<div class="poste"><div class="l1"><b>Dépensé en ' + an + '</b><span class="num">' + eur(totAn) + '</span></div>' +
+    '<div class="l2 num">budget annuel prévu 215 – 300 €</div>' +
+    '<div class="barre"><i class="' + (totAn > 300 ? "depasse" : "") + '" style="width:' + pct.toFixed(0) + '%"></i></div></div>' +
+    '<div class="poste"><div class="l1"><b>Ce mois-ci</b><span class="num">' + eur(totMois) + "</span></div>" +
+    '<div class="l2 num">repère du guide : environ 20 € par mois</div></div>' +
+    (cles.length ? '<div class="poste"><div class="l1"><b>Moyenne mensuelle constatée</b><span class="num">' +
+      eur(moyenne) + "</span></div><div class='l2 num'>sur " + cles.length + " mois de relevés</div></div>" : "") +
+    (cles.length ? '<h3 style="margin:14px 0 6px">Par mois</h3><table>' +
+      cles.slice().reverse().map(m => {
+        const p = m.split("-");
+        return "<tr><td class='num'>" + p[1] + "/" + p[0] + "</td><td class='num r'>" + eur(parMois[m]) + "</td></tr>";
+      }).join("") + "</table>" : '<p class="vide">Aucune dépense de fonctionnement enregistrée.</p>');
+  $("#tableRecurrent").innerHTML = "<table>" + RECURRENT.map(r =>
+    "<tr><td style='width:44%'><b>" + r[0] + "</b></td><td class='num r'>" + r[2] + "</td></tr>").join("") +
+    "<tr><td><b>Total</b></td><td class='num r'><b>215 à 300 €</b></td></tr></table>";
+
+  // ---- historique ----
+  const per = D.filtreDep || "tout";
+  let liste = D.depenses.slice();
+  if(per === "annee") liste = liste.filter(d => d.date.slice(0,4) === an);
+  if(per === "mois")  liste = liste.filter(d => d.date.slice(0,7) === mois);
+  const totalListe = liste.reduce((s,d) => s + nb(d.montant), 0);
+  $("#listeDep").innerHTML = liste.length
+    ? '<p class="avance"><b class="num">' + eur(totalListe) + "</b> sur " + liste.length + " ligne" + (liste.length>1?"s":"") + "</p>" +
+      "<table><tr><th>Date</th><th>Article</th><th class='r'>Montant</th><th></th></tr>" +
+      liste.slice().reverse().map(d => {
+        const idx = D.depenses.indexOf(d);
         return "<tr><td class='num'>" + frDate(d.date) + "</td><td>" + esc(d.article) +
-          "<br><span style='font-size:11.5px;color:var(--encre-pale)'>" + esc(d.poste) +
+          (d.qte ? " <span style='color:var(--encre-pale)'>· " + esc(d.qte) + "</span>" : "") +
+          "<br><span style='font-size:11.5px;color:var(--encre-pale)'>" +
+          (d.nature === "courant" ? "Fonctionnement" : "Installation") + " · " + esc(d.poste) +
           (d.ou ? " · " + esc(d.ou) : "") + "</span></td><td class='num r'>" + eur(d.montant) +
           "</td><td class='r'><button class='bmini sup' data-sup-dep='" + idx + "'>×</button></td></tr>";
       }).join("") + "</table>"
-    : '<p class="vide">Aucune dépense enregistrée.</p>';
+    : '<p class="vide">Aucune dépense pour cette période.</p>';
 
+  // ---- liste de courses ----
   let n = 0, tot = 0, achete = 0;
   groupes().forEach(g => g.items.forEach(it => { tot++; const c = coche(it.id); if(c){ n++; if(c.prix) achete += nb(c.prix)||0; } }));
   $("#avanceCourses").innerHTML = n + " article" + (n>1?"s":"") + " sur " + tot + " coché" + (n>1?"s":"") +
@@ -3002,9 +3063,10 @@ $("#bAjoutCourse").addEventListener("click", () => {
 $("#bAjoutDep").addEventListener("click", () => {
   const m = nb($("#dMontant").value), a = $("#dArticle").value.trim();
   if(!a || !isFinite(m) || m <= 0){ alert("Indiquez un article et un montant, par exemple 17,99."); return; }
-  D.depenses.push({date:$("#dDate").value || auj(), article:a, montant:m, poste:$("#dPoste").value, ou:$("#dOu").value.trim()});
+  D.depenses.push({date:$("#dDate").value || auj(), article:a, montant:m, poste:$("#dPoste").value,
+                   ou:$("#dOu").value.trim(), nature:$("#dNature").value, qte:$("#dQte").value.trim()});
   D.depenses.sort((x,y) => x.date.localeCompare(y.date));
-  sauver(); ["#dArticle","#dMontant","#dOu"].forEach(s => $(s).value = ""); tout();
+  sauver(); ["#dArticle","#dMontant","#dOu","#dQte"].forEach(s => $(s).value = ""); tout();
 });
 
 /* ---------- entretien, montage, journal ---------- */
@@ -3099,6 +3161,11 @@ document.addEventListener("click", e => {
   if(d.supDep   !== undefined){ D.depenses.splice(+d.supDep,1); sauver(); tout(); }
   if(d.supTache !== undefined){ D.taches.splice(+d.supTache,1); sauver(); tout(); }
   if(d.supNote  !== undefined){ D.journal.splice(+d.supNote,1); sauver(); tout(); }
+  if(d.periode !== undefined){
+    D.filtreDep = d.periode; sauver();
+    b.parentNode.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+    rendreBudget(); return;
+  }
   if(d.supCourse !== undefined){
     D.perso = (D.perso||[]).filter(x => x.id !== d.supCourse);
     delete D.courses[d.supCourse]; sauver(); tout();
