@@ -435,9 +435,19 @@ nav button.on{color:var(--eau); box-shadow:inset 0 2px 0 var(--eau)}
       <button data-periode="annee">Cette année</button>
       <button data-periode="mois">Ce mois</button>
     </div>
+    <div class="champ"><select id="fPosteHist"></select></div>
     <div class="carte" id="listeDep"></div>
   </div>
   <div class="pan" id="pan-courses">
+    <div class="sousong" style="margin-bottom:8px">
+      <button data-liste="install" class="on">Installation</button>
+      <button data-liste="conso">Consommables</button>
+      <button data-liste="tout">Tout</button>
+    </div>
+    <div class="deux" style="margin-bottom:8px">
+      <select id="fPoste"></select>
+      <input id="fRech" placeholder="Rechercher un article" autocomplete="off">
+    </div>
     <p class="avance" id="avanceCourses"></p>
     <div class="carte" id="listeCourses"></div>
     <div id="collage" hidden>
@@ -2786,7 +2796,7 @@ function vide(){
   return {reglages:{miseEnEau:"", volume:150, chgt:45},
     releves:[], population:JSON.parse(JSON.stringify(POP_INIT)),
     depenses:[], taches:JSON.parse(JSON.stringify(TACHES_INIT)), journal:[],
-    montage:{}, courses:{}, eau:{}, securite:{}, perso:[], ref:{}, renom:{}};
+    montage:{}, courses:{}, eau:{}, securite:{}, perso:[], ref:{}, renom:{}, conso:{}};
 }
 function charger(){
   try{
@@ -2835,7 +2845,7 @@ $("#bReglagesOuvrir").addEventListener("click", () => ouvrir("donnees"));
 
 document.querySelectorAll(".sousong").forEach(g => {
   g.addEventListener("click", e => {
-    const b = e.target.closest("button"); if(!b) return;
+    const b = e.target.closest("button"); if(!b || !b.dataset.pan) return;
     g.querySelectorAll("button").forEach(x => x.classList.remove("on"));
     b.classList.add("on");
     const sect = g.closest("section");
@@ -3005,6 +3015,14 @@ $("#bAjoutPop").addEventListener("click", () => {
 });
 
 /* ---------- budget et courses ---------- */
+const CONSO = [/nourriture/i, /granul/i, /pastilles/i, /art.mias/i, /ouate/i, /nitrax/i, /bioplus/i,
+  /conditionneur/i, /r.actifs|recharge/i, /catappa/i, /engrais/i, /billes d.argile/i, /vinaigre/i];
+function estConso(it, groupe){
+  if(D.conso && D.conso[it.id] !== undefined) return !!D.conso[it.id];
+  if(/NOURRITURE/i.test(groupe)) return true;
+  const t = (D.renom && D.renom[it.id] ? D.renom[it.id] : it.html).replace(/<[^>]+>/g,"");
+  return CONSO.some(r => r.test(t));
+}
 function libelle(it){
   return (D.renom && D.renom[it.id]) ? esc(D.renom[it.id]) : it.html;
 }
@@ -3134,6 +3152,7 @@ function rendreBudget(){
   let liste = D.depenses.slice();
   if(per === "annee") liste = liste.filter(d => d.date.slice(0,4) === an);
   if(per === "mois")  liste = liste.filter(d => d.date.slice(0,7) === mois);
+  if(D.filtrePoste) liste = liste.filter(d => d.poste === D.filtrePoste);
   const totalListe = liste.reduce((s,d) => s + nb(d.montant), 0);
   $("#listeDep").innerHTML = liste.length
     ? '<p class="avance"><b class="num">' + eur(totalListe) + "</b> sur " + liste.length + " ligne" + (liste.length>1?"s":"") + "</p>" +
@@ -3151,12 +3170,36 @@ function rendreBudget(){
 
   // ---- liste de courses ----
   let n = 0, tot = 0, achete = 0;
-  groupes().forEach(g => g.items.forEach(it => { tot++; const c = coche(it.id); if(c){ n++; if(c.prix) achete += nb(c.prix)||0; } }));
+  const flc = D.filtreListe || {type:"install", poste:"", q:""};
+  groupes().forEach(g => g.items.forEach(it => {
+    if(flc.type === "install" && estConso(it, g.titre)) return;
+    if(flc.type === "conso" && !estConso(it, g.titre)) return;
+    tot++; const c = coche(it.id); if(c){ n++; if(c.prix) achete += nb(c.prix)||0; }
+  }));
   $("#avanceCourses").innerHTML = n + " article" + (n>1?"s":"") + " sur " + tot + " coché" + (n>1?"s":"") +
     (achete ? ' — <b class="num">' + eur(achete) + "</b> reportés au budget" : "");
   const sel2 = $("#aGroupe");
   if(!sel2.options.length) sel2.innerHTML = COURSES.map(g => "<option>" + esc(g.titre) + "</option>").join("");
-  $("#listeCourses").innerHTML = groupes().map(g =>
+  const fp = $("#fPoste");
+  if(!fp.options.length) fp.innerHTML = '<option value="">Tous les postes</option>' +
+    POSTES.map(p => "<option>" + esc(p.nom) + "</option>").join("");
+  const fph = $("#fPosteHist");
+  if(fph && !fph.options.length) fph.innerHTML = '<option value="">Tous les postes</option>' +
+    POSTES.map(p => "<option>" + esc(p.nom) + "</option>").join("");
+  const fl = D.filtreListe || {type:"install", poste:"", q:""};
+  const garde = (g, it) => {
+    if(fl.type === "install" && estConso(it, g.titre)) return false;
+    if(fl.type === "conso" && !estConso(it, g.titre)) return false;
+    if(fl.poste && posteDe(g.titre, it.html) !== fl.poste) return false;
+    if(fl.q){
+      const t2 = (libelle(it) + " " + (coche(it.id) ? (coche(it.id).ou || "") + " " + (coche(it.id).note || "") : ""))
+        .replace(/<[^>]+>/g,"").toLowerCase();
+      if(t2.indexOf(fl.q.toLowerCase()) === -1) return false;
+    }
+    return true;
+  };
+  $("#listeCourses").innerHTML = groupes().map(g => Object.assign({}, g, {items:g.items.filter(it => garde(g, it))}))
+    .filter(g => g.items.length).map(g =>
     '<div class="grp"><h4>' + esc(g.titre) + "</h4>" + g.items.map(it => {
       if(it.remplace_par)
         return '<div class="art remplace"><span class="barre2">' + libelle(it) + "</span>" +
@@ -3186,7 +3229,7 @@ function rendreBudget(){
              ecart(it.id, it.html, c) + rachats(it.html) +
              '<button class="bs racheter" data-racheter="' + it.id + '">Racheter — nouvelle dépense</button>' +
              "</div>" : "") + "</div>";
-    }).join("") + "</div>").join("");
+    }).join("") + "</div>").join("") || '<p class="vide">Aucun article ne correspond à ce filtre.</p>';
 }
 
 $("#bAjoutCourse").addEventListener("click", () => {
@@ -3298,6 +3341,12 @@ document.addEventListener("click", e => {
   if(d.supDep   !== undefined){ D.depenses.splice(+d.supDep,1); sauver(); tout(); }
   if(d.supTache !== undefined){ D.taches.splice(+d.supTache,1); sauver(); tout(); }
   if(d.supNote  !== undefined){ D.journal.splice(+d.supNote,1); sauver(); tout(); }
+  if(d.liste !== undefined){
+    D.filtreListe = Object.assign({type:"install", poste:"", q:""}, D.filtreListe, {type:d.liste});
+    sauver();
+    b.parentNode.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+    rendreBudget(); return;
+  }
   if(d.periode !== undefined){
     D.filtreDep = d.periode; sauver();
     b.parentNode.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
@@ -3365,6 +3414,11 @@ document.addEventListener("click", e => {
 });
 document.addEventListener("change", e => {
   const t = e.target, d = t.dataset;
+  if(t.id === "fPoste"){
+    D.filtreListe = Object.assign({type:"install", poste:"", q:""}, D.filtreListe, {poste:t.value});
+    sauver(); rendreBudget(); return;
+  }
+  if(t.id === "fPosteHist"){ D.filtrePoste = t.value; sauver(); rendreBudget(); return; }
   if(d.reel !== undefined){ D.population[+d.reel].reel = t.value === "" ? null : Number(t.value); sauver(); rendreBord(); rendrePop(); }
   if(d.entre !== undefined){ D.population[+d.entre].entre = t.value; sauver(); }
   if(d.montage !== undefined){ D.montage[d.montage] = t.checked; sauver(); rendreEntretien(); }
@@ -3640,8 +3694,27 @@ function alerteChaleur(){
   return '<div class="bandeau"><b>' + t.toFixed(1).replace(".", ",") + " °C — " + l[0] + ".</b> " + l[2] + "</div>";
 }
 
+function etatFiltres(){
+  const fl = D.filtreListe || {type:"install"};
+  document.querySelectorAll("button[data-liste]").forEach(x => x.classList.toggle("on", x.dataset.liste === fl.type));
+  if($("#fPoste")) $("#fPoste").value = fl.poste || "";
+  if($("#fRech") && document.activeElement !== $("#fRech")) $("#fRech").value = fl.q || "";
+  if($("#fPosteHist")) $("#fPosteHist").value = D.filtrePoste || "";
+  document.querySelectorAll("button[data-periode]").forEach(x => x.classList.toggle("on", x.dataset.periode === (D.filtreDep || "tout")));
+}
 function tout(){ rendreBord(); rendreParam(); rendrePop(); rendreBudget(); rendreEntretien(); rendreDonnees();
-  rendreOuEnEst(); rendreRodage(); rendreCalendrier(); rendreEau(); rendreNourrir(); rendreSos(); rendreKit(); }
+  etatFiltres(); rendreOuEnEst(); rendreRodage(); rendreCalendrier(); rendreEau(); rendreNourrir(); rendreSos(); rendreKit(); }
+(function(){
+  let m2;
+  $("#fRech").addEventListener("input", e => {
+    clearTimeout(m2);
+    m2 = setTimeout(() => {
+      D.filtreListe = Object.assign({type:"install", poste:"", q:""}, D.filtreListe, {q:e.target.value.trim()});
+      sauver(); rendreBudget();
+      $("#fRech").value = D.filtreListe.q;
+    }, 250);
+  });
+})();
 $("#dDate").value = auj();
 tout();
 </script>
