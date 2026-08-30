@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Carnet du Rio 180</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0B242B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icone-180.png">
+<link rel="icon" href="icone-192.png">
 <style>
 :root{
   --abysse:#0B242B; --eau:#14707A; --eau-clair:#2E9E8F; --surface:#F2F6F5;
@@ -164,6 +170,8 @@ td.r,th.r{text-align:right; padding-right:0}
 .detail .ref.plus{color:var(--ambre)} .detail .ref.moins{color:var(--mousse)}
 .refseule{padding:0 0 8px 28px}
 .refseule .ref{font-size:11.5px; color:var(--encre-pale)}
+.rapide{display:flex; gap:7px; margin-bottom:12px; overflow-x:auto}
+.rapide button{flex:1 0 auto; padding:9px 11px; font-size:13px; white-space:nowrap}
 .expli{font-size:12.5px; color:var(--encre-pale); margin:0 0 10px; line-height:1.45}
 .detail .racheter, .detail .coller{align-self:flex-start; padding:6px 10px; font-size:12.5px}
 .detail .lienProduit{font-size:12.5px; color:var(--eau); word-break:break-all}
@@ -193,12 +201,24 @@ nav button{flex:1; background:none; border-radius:0; padding:9px 1px 8px; color:
   font-size:10px; font-weight:500}
 nav button b{display:block; font-size:15px; font-weight:600; margin-bottom:1px}
 nav button.on{color:var(--eau); box-shadow:inset 0 2px 0 var(--eau)}
+nav button{position:relative}
+nav .badge{position:absolute; top:5px; right:calc(50% - 22px); min-width:16px; height:16px; padding:0 4px;
+  border-radius:9px; background:var(--alerte); color:#fff; font-size:10px; font-style:normal;
+  line-height:16px; text-align:center; font-weight:700}
 
 .pied{font-size:11.5px; color:var(--encre-pale); text-align:center; padding:6px 0 2px}
 .bandeau{background:#FDF4F3; border:1px solid #EFC2BE; color:#7E2A24; border-radius:var(--r);
   padding:10px 12px; font-size:13px; margin-bottom:12px}
 .bandeau button{margin-top:6px; background:#fff; color:#7E2A24; border:1px solid #EFC2BE; padding:5px 9px; font-size:12.5px}
 @media (max-width:380px){ .grille{grid-template-columns:repeat(2,1fr)} }
+@media print{
+  header, nav, .sousong, .rapide, #guide-nav, .outils, .detail button, .detail input, #collage{display:none !important}
+  body{padding:0; background:#fff; font-size:11pt}
+  section{display:none !important} section.on{display:block !important}
+  .pan{display:none !important} .pan.on{display:block !important}
+  .carte{border:0; padding:0} .art{break-inside:avoid}
+  .coche input{-webkit-appearance:none; appearance:none; width:12px; height:12px; border:1px solid #333}
+}
 
 /* ---- guide intégré ---- */
 #guide-root{font-family:"DejaVu Sans", Helvetica, Arial, sans-serif; color:#263238; font-size:9.4pt; line-height:1.44; margin:0;}
@@ -309,6 +329,11 @@ nav button.on{color:var(--eau); box-shadow:inset 0 2px 0 var(--eau)}
 
 <section id="s-bord" class="on">
   <div id="alertes"></div>
+  <div class="rapide">
+    <button class="bs" data-rapide="test">Noter un test</button>
+    <button class="bs" data-rapide="eau">Changement d'eau</button>
+    <button class="bs" data-rapide="note">Ajouter une note</button>
+  </div>
   <h3>Derniers paramètres</h3>
   <div class="grille" id="pastilles"></div>
   <p class="vide" id="dateReleve"></p>
@@ -2669,11 +2694,15 @@ nav button.on{color:var(--eau); box-shadow:inset 0 2px 0 var(--eau)}
   <div class="carte">
     <p style="margin:0 0 10px; font-size:13.5px; color:var(--encre-pale)">
       Tout est stocké dans ce navigateur, sur cet appareil. Exportez un fichier pour transférer vos données ailleurs ou les mettre à l'abri.</p>
+    <p id="dernierExport" style="margin:0 0 8px; font-size:12.5px"></p>
     <div class="lignebtn">
       <button class="bs" id="bExport" style="flex:1">Exporter</button>
       <button class="bs" id="bImport" style="flex:1">Importer</button>
     </div>
     <input type="file" id="fImport" accept="application/json" hidden>
+    <div class="lignebtn" style="margin-top:8px">
+      <button class="bs" id="bCsv" style="flex:1">Achats en CSV</button>
+    </div>
     <div class="lignebtn" style="margin-top:8px">
       <button class="bs" id="bRaz" style="flex:1; color:var(--alerte)">Tout effacer</button>
     </div>
@@ -2688,7 +2717,7 @@ nav button.on{color:var(--eau); box-shadow:inset 0 2px 0 var(--eau)}
   <button data-vue="param"><b>&#8779;</b>Tests</button>
   <button data-vue="pop"><b>&#10038;</b>Vivant</button>
   <button data-vue="budget"><b>&#8364;</b>Budget</button>
-  <button data-vue="entretien"><b>&#10003;</b>Entretien</button>
+  <button data-vue="entretien"><b>&#10003;</b>Entretien<i class="badge" id="badgeEnt" hidden></i></button>
   <button data-vue="guide"><b>&#9636;</b>Guide</button>
 </nav>
 
@@ -3325,10 +3354,8 @@ $("#bReglages").addEventListener("click", () => {
   sauver(); tout(); ouvrir("bord");
 });
 $("#bExport").addEventListener("click", () => {
-  const b = new Blob([JSON.stringify(D,null,2)], {type:"application/json"});
-  const u = URL.createObjectURL(b), a = document.createElement("a");
-  a.href = u; a.download = "carnet-rio180-" + auj() + ".json";
-  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(u);
+  telecharger("carnet-rio180-" + auj() + ".json", JSON.stringify(D, null, 2), "application/json");
+  D.dernierExport = auj(); sauver(); rendreSauvegarde();
 });
 $("#bImport").addEventListener("click", () => $("#fImport").click());
 $("#fImport").addEventListener("change", e => {
@@ -3709,6 +3736,62 @@ function alerteChaleur(){
   return '<div class="bandeau"><b>' + t.toFixed(1).replace(".", ",") + " °C — " + l[0] + ".</b> " + l[2] + "</div>";
 }
 
+
+/* ---------- actions rapides ---------- */
+document.addEventListener("click", e => {
+  const b = e.target.closest("button[data-rapide]"); if(!b) return;
+  const r = b.dataset.rapide;
+  if(r === "test"){ ouvrir("param"); setTimeout(() => $("#pPh").focus(), 80); }
+  if(r === "eau"){
+    ouvrir("entretien");
+    document.querySelector(".sousong[data-groupe='ent'] button[data-pan='eau']").click();
+  }
+  if(r === "note"){
+    ouvrir("entretien");
+    document.querySelector(".sousong[data-groupe='ent'] button[data-pan='journal']").click();
+    setTimeout(() => $("#jNote").focus(), 80);
+  }
+});
+
+/* ---------- badge des tâches en retard ---------- */
+function rendreBadge(){
+  const n = D.taches.filter(t => !t.fait || (t.periode - joursEntre(t.fait, auj())) < 0).length;
+  const el = $("#badgeEnt");
+  el.hidden = n === 0; el.textContent = n;
+}
+
+/* ---------- sauvegarde : suivi et CSV ---------- */
+function rendreSauvegarde(){
+  const el = $("#dernierExport"); if(!el) return;
+  if(!D.dernierExport){
+    el.innerHTML = '<span style="color:var(--ambre)">Aucune sauvegarde exportée pour l\'instant.</span>';
+    return;
+  }
+  const j = joursEntre(D.dernierExport, auj());
+  el.innerHTML = "Dernière sauvegarde le " + frDate(D.dernierExport) +
+    (j > 30 ? ' — <span style="color:var(--ambre)">il y a ' + j + " jours, pensez à en refaire une</span>" : "");
+}
+function telecharger(nom, contenu, type){
+  const b = new Blob([contenu], {type:type});
+  const u = URL.createObjectURL(b), a = document.createElement("a");
+  a.href = u; a.download = nom; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(u);
+}
+$("#bCsv").addEventListener("click", () => {
+  const A = achats().sort((a,b) => (a.date||"").localeCompare(b.date||""));
+  if(!A.length){ alert("Aucun achat à exporter."); return; }
+  const q = v => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
+  const l = [["Date","Article","Quantité","Poste","Nature","Vendeur","Montant"].map(q).join(";")]
+    .concat(A.map(a => [a.date, a.article, a.qte, a.poste,
+      a.nature === "courant" ? "Fonctionnement" : "Installation", a.ou,
+      a.montant.toFixed(2).replace(".", ",")].map(q).join(";")));
+  telecharger("achats-rio180-" + auj() + ".csv", "\ufeff" + l.join("\r\n"), "text/csv;charset=utf-8");
+});
+
+/* ---------- mise en cache hors ligne ---------- */
+if("serviceWorker" in navigator && location.protocol.indexOf("http") === 0){
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+
 function etatFiltres(){
   const fl = D.filtreListe || {type:"install"};
   document.querySelectorAll("button[data-liste]").forEach(x => x.classList.toggle("on", x.dataset.liste === fl.type));
@@ -3718,7 +3801,7 @@ function etatFiltres(){
   document.querySelectorAll("button[data-periode]").forEach(x => x.classList.toggle("on", x.dataset.periode === (D.filtreDep || "tout")));
 }
 function tout(){ rendreBord(); rendreParam(); rendrePop(); rendreBudget(); rendreEntretien(); rendreDonnees();
-  etatFiltres(); rendreOuEnEst(); rendreRodage(); rendreCalendrier(); rendreEau(); rendreNourrir(); rendreSos(); rendreKit(); }
+  etatFiltres(); rendreBadge(); rendreSauvegarde(); rendreOuEnEst(); rendreRodage(); rendreCalendrier(); rendreEau(); rendreNourrir(); rendreSos(); rendreKit(); }
 (function(){
   let m2;
   $("#fRech").addEventListener("input", e => {
