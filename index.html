@@ -162,6 +162,8 @@ td.r,th.r{text-align:right; padding-right:0}
 .detail .po{font-size:11.5px; color:var(--encre-pale); align-self:center}
 .detail .ref{font-size:11.5px; color:var(--encre-pale)}
 .detail .ref.plus{color:var(--ambre)} .detail .ref.moins{color:var(--mousse)}
+.refseule{padding:0 0 8px 28px}
+.refseule .ref{font-size:11.5px; color:var(--encre-pale)}
 .expli{font-size:12.5px; color:var(--encre-pale); margin:0 0 10px; line-height:1.45}
 .detail .racheter, .detail .coller{align-self:flex-start; padding:6px 10px; font-size:12.5px}
 .detail .lienProduit{font-size:12.5px; color:var(--eau); word-break:break-all}
@@ -568,12 +570,12 @@ nav button.on{color:var(--eau); box-shadow:inset 0 2px 0 var(--eau)}
     <tr><th>Catégorie</th><th>Éléments inclus</th><th>Prix estimé</th></tr>
     <tr><td><b>Aquarium + meuble</b></td><td>Cuve Juwel Rio 180 + meuble support + filtre Bioflow M + chauffage AquaHeat + LED MultiLux</td><td>500 – 650 €</td></tr>
     <tr><td><b>Sol &amp; décors</b></td><td>Sable clair (20 kg) + 1 racine naturelle + 5 pierres non calcaires (3 de structure + 2 plates) + 1 décor résine (phare Flamingo, déjà acquis)</td><td>85 – 110 €</td></tr>
-    <tr><td><b>Technique &amp; tests</b></td><td>Mallette de tests en gouttes (JBL ProAquaTest Combi Set Plus NH4) + programmateur + conditionneur complet + thermomètre indépendant + niveau à bulle</td><td>75 – 95 €</td></tr>
-    <tr><td><b>Plantes &amp; engrais</b></td><td>4 Vallisneria, 6 Cryptocoryne, 3 portions de mousse de Java, 2 Anubias nana, 1 fougère de Java, 5 flottantes, catappa + engrais + billes d'argile</td><td>80 – 100 €</td></tr>
-    <tr><td><b>Outils d'entretien</b></td><td>Siphon de nettoyage du sol (voir section 14) + aimant à vitre + épuisette + 2 seaux dédiés + fil de coton ou colle gel + poster de fond noir + masses filtrantes d'avance (ouate bioPad M, mousse Nitrax M, mousse bioPlus M — voir section 17)</td><td>65 – 80 €</td></tr>
-    <tr><td><b>Alimentation</b></td><td>JBL NovoGranoMix Mini + JBL NovoTab + Hikari Algae Wafers + artémias surgelées</td><td>25 – 30 €</td></tr>
-    <tr><td><b>Le vivant (faune)</b></td><td>30 néons bleus + 8 Corydoras + 6 Otocinclus + 1 Ancistrus + 20 crevettes Neocaridina + 8 Amano + 3 à 5 Neritina. Aucun poisson de surface.</td><td>125 – 155 €</td></tr>
-    <tr class="tot"><td colspan="2">INVESTISSEMENT TOTAL — budget prévisionnel tout équipé pour le lancement</td><td>955 – 1 220 €</td></tr>
+    <tr><td><b>Technique &amp; tests</b></td><td>Mallette de tests en gouttes (JBL ProAquaTest Combi Set Plus NH4) + programmateur + conditionneur complet + thermomètre indépendant + niveau à bulle</td><td>125 – 155 €</td></tr>
+    <tr><td><b>Plantes &amp; engrais</b></td><td>4 Vallisneria, 6 Cryptocoryne, 3 portions de mousse de Java, 2 Anubias nana, 1 fougère de Java, 5 flottantes, catappa + engrais + billes d'argile</td><td>105 – 130 €</td></tr>
+    <tr><td><b>Outils d'entretien</b></td><td>Siphon de nettoyage du sol (voir section 14) + aimant à vitre + épuisette + 2 seaux dédiés + fil de coton ou colle gel + poster de fond noir + masses filtrantes d'avance (ouate bioPad M, mousse Nitrax M, mousse bioPlus M — voir section 17)</td><td>95 – 120 €</td></tr>
+    <tr><td><b>Alimentation</b></td><td>JBL NovoGranoMix Mini + JBL NovoTab + Hikari Algae Wafers + artémias surgelées</td><td>20 – 30 €</td></tr>
+    <tr><td><b>Le vivant (faune)</b></td><td>30 néons bleus + 8 Corydoras + 6 Otocinclus + 1 Ancistrus + 20 crevettes Neocaridina + 8 Amano + 3 à 5 Neritina. Aucun poisson de surface.</td><td>250 – 310 €</td></tr>
+    <tr class="tot"><td colspan="2">INVESTISSEMENT TOTAL — budget prévisionnel tout équipé pour le lancement</td><td>1 180 – 1 505 €</td></tr>
   </table>
 
 
@@ -2706,11 +2708,11 @@ const SEUILS = [
 const POSTES = [
   {nom:"Aquarium + meuble", min:500, max:650},
   {nom:"Sol & décors",      min:85,  max:110},
-  {nom:"Technique & tests", min:75,  max:95},
-  {nom:"Plantes & engrais", min:80,  max:100},
-  {nom:"Outils d'entretien",min:65,  max:80},
-  {nom:"Alimentation",      min:25,  max:30},
-  {nom:"Le vivant",         min:125, max:155}
+  {nom:"Technique & tests", min:125, max:155},
+  {nom:"Plantes & engrais", min:105, max:130},
+  {nom:"Outils d'entretien",min:95,  max:120},
+  {nom:"Alimentation",      min:20,  max:30},
+  {nom:"Le vivant",         min:250, max:310}
 ];
 
 const POP_INIT = [{"nom": "Néon bleu", "strate": "Pleine eau", "prevu": 30, "semaine": "S8", "sect": 9, "ancre": "f-neon-bleu", "img": "img/i-002.jpg", "reel": null, "entre": ""}, {"nom": "Corydoras sterbai", "strate": "Fond", "prevu": 8, "semaine": "S6", "sect": 9, "ancre": "f-corydoras", "img": "img/i-004.jpg", "reel": null, "entre": ""}, {"nom": "Otocinclus", "strate": "Feuilles et vitres", "prevu": 6, "semaine": "S12", "sect": 9, "ancre": "f-otocinclus", "img": "img/otocinclus.jpg", "reel": null, "entre": ""}, {"nom": "Ancistrus", "strate": "Fond", "prevu": 1, "semaine": "S6", "sect": 9, "ancre": "f-ancistrus", "img": "img/i-005.jpg", "reel": null, "entre": ""}, {"nom": "Neritina", "strate": "Feuilles et vitres", "prevu": 4, "semaine": "S6", "sect": 9, "ancre": "f-escargot-neritina", "img": "img/i-012.jpg", "reel": null, "entre": ""}, {"nom": "Neocaridina Red Cherry", "strate": "Fond", "prevu": 20, "semaine": "S4", "sect": 9, "ancre": "f-crevette-neocaridina-red-cherry", "img": "img/i-006.jpg", "reel": null, "entre": ""}, {"nom": "Crevette Amano", "strate": "Fond", "prevu": 8, "semaine": "S5", "sect": 9, "ancre": "f-crevette-amano", "img": "img/i-011.jpg", "reel": null, "entre": ""}];
@@ -2736,29 +2738,31 @@ const POSTE_GROUPE = {
   "LE VIVANT — DANS CET ORDRE":"Le vivant"
 };
 function posteDe(groupe, texte){
-  if(/cuve|meuble/i.test(texte.replace(/<[^>]+>/g,""))) return "Aquarium + meuble";
+  const t = texte.replace(/<[^>]+>/g, "");
+  if(/cuve|meuble/i.test(t)) return "Aquarium + meuble";
+  if(/pince .{0,3}planter|colle gel|fil de coton/i.test(t)) return "Outils d'entretien";
   return POSTE_GROUPE[groupe] || "Sol & décors";
 }
 const REFS = [
-  [/cuve rio 180/i, 499],   [/sable clair 20 kg/i, 36.48], [/racine araign/i, 24],
-  [/pierres de lave/i, 8.22], [/pierres plates/i, 0],      [/poster de fond/i, 12],
-  [/phare r/i, 0],          [/scotch repositionnable/i, 4], [/vinaigre blanc/i, 2],
-  [/mallette de tests/i, 78], [/conditionneur/i, 8],        [/programmateur/i, 10],
-  [/thermom/i, 4],          [/multiprise/i, 15],           [/d.tecteur de fuite/i, 15],
+  [/cuve rio 180/i, 499],        [/sable clair 20 kg/i, 36.48],  [/racine araign/i, 24],
+  [/pierres de lave/i, 8.22],    [/pierres plates/i, 0],         [/poster de fond/i, 12],
+  [/phare r/i, 0],               [/scotch repositionnable/i, 4], [/vinaigre blanc/i, 2],
+  [/mallette de tests/i, 78],    [/conditionneur/i, 8],          [/programmateur/i, 10],
+  [/thermom/i, 4],               [/multiprise/i, 15],            [/d.tecteur de fuite/i, 15],
   [/niveau .{0,3}bulle/i, 8],
-  [/vallisneria/i, 16],     [/cryptocoryne/i, 24],         [/mousse de java/i, 15],
-  [/anubias/i, 12],         [/foug.re de java/i, 7],       [/flottantes/i, 6],
-  [/catappa/i, 7.59],       [/billes d.argile/i, 6],       [/engrais racinaire/i, 6.99],
-  [/engrais liquide/i, 4.99], [/pince .{0,3}planter/i, 15.99], [/fil de coton|colle gel/i, 5.99],
-  [/siphon/i, 17.47],       [/aimant/i, 3.99],             [/.puisette/i, 4.99],
-  [/2 seaux/i, 10],         [/tuyau d.air/i, 5.99],        [/ouate biopad/i, 5.67],
-  [/nitrax/i, 13.77],       [/bioplus/i, 3.98],            [/ciseaux courb/i, 8.54],
+  [/vallisneria/i, 18],          [/cryptocoryne/i, 30],          [/mousse de java/i, 15],
+  [/anubias/i, 14],              [/foug.res? de java/i, 7],      [/flottantes/i, 5],
+  [/catappa/i, 7.59],            [/billes d.argile/i, 6],        [/engrais racinaire/i, 6.99],
+  [/engrais liquide/i, 4.99],    [/pince .{0,3}planter/i, 15.99],[/fil de coton|colle gel/i, 5.99],
+  [/siphon/i, 17.47],            [/aimant/i, 3.99],              [/.puisette/i, 4.99],
+  [/2 seaux/i, 10],              [/tuyau d.air/i, 5.99],         [/ouate biopad/i, 5.67],
+  [/nitrax/i, 13.77],            [/bioplus/i, 3.98],             [/ciseaux courb/i, 8.54],
   [/tuyau souple 12/i, 5],
-  [/micro-granul/i, 5.39],  [/pastilles de fond/i, 5.29],  [/pastilles d.algues/i, 5.29],
+  [/micro-granul/i, 5.39],       [/pastilles de fond/i, 5.29],   [/pastilles d.algues/i, 5.29],
   [/art.mias/i, 5],
-  [/neocaridina/i, 45],     [/amano/i, 24],                [/corydoras/i, 40],
-  [/ancistrus/i, 8],        [/neritina/i, 12],             [/n.ons bleus/i, 60],
-  [/otocinclus/i, 24]
+  [/neocaridina/i, 60],          [/amano/i, 28],                 [/corydoras/i, 64],
+  [/ancistrus/i, 10],            [/neritina/i, 14],              [/n.ons bleus/i, 75],
+  [/otocinclus/i, 27]
 ];
 function refDe(id, texte){
   if(D.ref && D.ref[id] !== undefined && D.ref[id] !== "") return nb(D.ref[id]);
@@ -3017,7 +3021,7 @@ $("#bAjoutPop").addEventListener("click", () => {
 
 /* ---------- budget et courses ---------- */
 const CONSO = [/nourriture/i, /granul/i, /pastilles/i, /art.mias/i, /ouate/i, /nitrax/i, /bioplus/i,
-  /conditionneur/i, /r.actifs|recharge/i, /catappa/i, /engrais/i, /billes d.argile/i, /vinaigre/i];
+  /conditionneur/i, /r.actifs|recharge/i, /catappa/i, /engrais/i, /billes d.argile/i];
 function estConso(it, groupe){
   if(D.conso && D.conso[it.id] !== undefined) return !!D.conso[it.id];
   if(/NOURRITURE/i.test(groupe)) return true;
@@ -3222,6 +3226,7 @@ function rendreBudget(){
         '<div class="outils"><button class="bmini" data-renom="' + it.id + '">renommer</button>' +
         '<button class="bmini" data-remplacer="' + it.id + '">remplacer</button>' +
         (it.perso ? '<button class="bmini sup" data-sup-course="' + it.id + '">supprimer</button>' : "") + "</div>" +
+        (!c ? '<div class="refseule">' + ecart(it.id, it.html, null) + "</div>" : "") +
         (c ? '<div class="detail">' +
              '<div class="d2"><input type="text" inputmode="decimal" data-prix="' + it.id + '" value="' + (c.prix || "") + '" placeholder="prix €">' +
              '<input type="date" data-achat="' + it.id + '" value="' + (c.date || "") + '"></div>' +
@@ -3430,7 +3435,7 @@ document.addEventListener("change", e => {
   }
   if(t.id === "fPosteHist"){ D.filtrePoste = t.value; sauver(); rendreBudget(); return; }
   if(d.reel !== undefined){ D.population[+d.reel].reel = t.value === "" ? null : Number(t.value); sauver(); rendreBord(); rendrePop(); }
-  if(d.entre !== undefined){ D.population[+d.entre].entre = t.value; sauver(); }
+  if(d.entre !== undefined){ D.population[+d.entre].entre = t.value; sauver(); rendreCalendrier(); rendreBord(); }
   if(d.montage !== undefined){ D.montage[d.montage] = t.checked; sauver(); rendreEntretien(); }
   if(d.course !== undefined){
     D.courses[d.course] = t.checked ? Object.assign({fait:true}, coche(d.course) || {}) : undefined;
