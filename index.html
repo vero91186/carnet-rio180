@@ -591,17 +591,11 @@ nav .badge{position:absolute; top:5px; right:calc(50% - 22px); min-width:16px; h
   <div id="guide-root">
 <div class="page" data-n="1"><h2><span class="num">1</span>Budget global &amp; liste de courses</h2>
   <div class="rule"></div>
-  <table class="t">
-    <tr><th>Catégorie</th><th>Éléments inclus</th><th>Prix estimé</th></tr>
-    <tr><td><b>Aquarium + meuble</b></td><td>Cuve Juwel Rio 180 + meuble support + filtre Bioflow M + chauffage AquaHeat + LED MultiLux</td><td>500 – 650 €</td></tr>
-    <tr><td><b>Sol &amp; décors</b></td><td>Sable clair (25 kg) + 1 racine naturelle + 5 pierres non calcaires (3 de structure + 2 plates) + 1 décor résine (phare Flamingo, déjà acquis)</td><td>85 – 110 €</td></tr>
-    <tr><td><b>Technique &amp; tests</b></td><td>Mallette de tests en gouttes (JBL ProAquaTest Combi Set Plus NH4) + programmateur + conditionneur complet + thermomètre indépendant + niveau à bulle</td><td>125 – 155 €</td></tr>
-    <tr><td><b>Plantes &amp; engrais</b></td><td>4 Vallisneria, 6 Cryptocoryne, 3 portions de mousse de Java, 2 Anubias nana, 1 fougère de Java, 5 flottantes, catappa + engrais + billes d'argile</td><td>105 – 130 €</td></tr>
-    <tr><td><b>Outils d'entretien</b></td><td>Siphon de nettoyage du sol (voir section 14) + aimant à vitre + épuisette + 2 seaux dédiés + fil de coton ou colle gel + poster de fond noir + masses filtrantes d'avance (ouate bioPad M, mousse Nitrax M, mousse bioPlus M — voir section 17)</td><td>95 – 120 €</td></tr>
-    <tr><td><b>Alimentation</b></td><td>JBL NovoGranoMix Mini + JBL NovoTab + Hikari Algae Wafers + artémias surgelées</td><td>20 – 30 €</td></tr>
-    <tr><td><b>Le vivant (faune)</b></td><td>30 néons bleus + 8 Corydoras + 6 Otocinclus + 1 Ancistrus + 20 crevettes Neocaridina + 8 Amano + 3 à 5 Neritina. Aucun poisson de surface.</td><td>250 – 310 €</td></tr>
-    <tr class="tot"><td colspan="2">INVESTISSEMENT TOTAL — budget prévisionnel tout équipé pour le lancement</td><td>1 180 – 1 505 €</td></tr>
-  </table>
+  <p class="intro">Ce tableau est calculé en direct à partir de votre liste de courses : la colonne de droite donne, pour
+  chaque poste, ce que vous avez <b>payé</b>, ce qu'il <b>reste à acheter</b> au prix de référence, et le <b>total projeté</b>.
+  Il n'y a donc plus de fourchette figée — les montants suivent vos saisies. Les consommables sont suivis à part, dans
+  l'onglet Fonctionnement du budget.</p>
+  <table class="t" id="tabBudgetGuide"></table>
 
 
 <div class="bloc">
@@ -2736,13 +2730,13 @@ const SEUILS = [
 ];
 
 const POSTES = [
-  {nom:"Aquarium + meuble", min:500, max:650},
-  {nom:"Sol & décors",      min:85,  max:110},
-  {nom:"Technique & tests", min:125, max:155},
-  {nom:"Plantes & engrais", min:105, max:130},
-  {nom:"Outils d'entretien",min:95,  max:120},
-  {nom:"Alimentation",      min:20,  max:30},
-  {nom:"Le vivant",         min:250, max:310}
+  {nom:"Aquarium + meuble", inclus:"Cuve Juwel Rio 180 + meuble support + filtre Bioflow M + chauffage AquaHeat + LED MultiLux"},
+  {nom:"Sol & décors",      inclus:"Sable clair (25 kg) + 1 racine naturelle + 5 pierres non calcaires (3 de structure + 2 plates) + 1 décor résine (phare Flamingo, déjà acquis)"},
+  {nom:"Technique & tests", inclus:"Mallette de tests en gouttes (JBL ProAquaTest Combi Set Plus NH4) + programmateur + conditionneur complet + thermomètre indépendant + niveau à bulle"},
+  {nom:"Plantes & engrais", inclus:"4 Vallisneria, 6 Cryptocoryne, 3 portions de mousse de Java, 2 Anubias nana, 1 fougère de Java, 5 flottantes, catappa + engrais + billes d'argile"},
+  {nom:"Outils d'entretien",inclus:"Siphon de nettoyage du sol + aimant à vitre + épuisette + 2 seaux dédiés + fil de coton ou colle gel + poster de fond noir + masses filtrantes d'avance"},
+  {nom:"Alimentation",      inclus:"JBL NovoGranoMix Mini + JBL NovoTab + Hikari Algae Wafers + artémias surgelées"},
+  {nom:"Le vivant",         inclus:"30 néons bleus + 8 Corydoras + 6 Otocinclus + 1 Ancistrus + 20 Neocaridina + 8 Amano + 3 à 5 Neritina"}
 ];
 
 const POP_INIT = [{"nom": "Néon bleu", "strate": "Pleine eau", "prevu": 30, "semaine": "S8", "sect": 9, "ancre": "f-neon-bleu", "img": "img/i-002.jpg", "reel": null, "entre": ""}, {"nom": "Corydoras sterbai", "strate": "Fond", "prevu": 8, "semaine": "S6", "sect": 9, "ancre": "f-corydoras", "img": "img/i-004.jpg", "reel": null, "entre": ""}, {"nom": "Otocinclus", "strate": "Feuilles et vitres", "prevu": 6, "semaine": "S12", "sect": 9, "ancre": "f-otocinclus", "img": "img/otocinclus.jpg", "reel": null, "entre": ""}, {"nom": "Ancistrus", "strate": "Fond", "prevu": 1, "semaine": "S6", "sect": 9, "ancre": "f-ancistrus", "img": "img/i-005.jpg", "reel": null, "entre": ""}, {"nom": "Neritina", "strate": "Feuilles et vitres", "prevu": 4, "semaine": "S6", "sect": 9, "ancre": "f-escargot-neritina", "img": "img/i-012.jpg", "reel": null, "entre": ""}, {"nom": "Neocaridina Red Cherry", "strate": "Fond", "prevu": 20, "semaine": "S4", "sect": 9, "ancre": "f-crevette-neocaridina-red-cherry", "img": "img/i-006.jpg", "reel": null, "entre": ""}, {"nom": "Crevette Amano", "strate": "Fond", "prevu": 8, "semaine": "S5", "sect": 9, "ancre": "f-crevette-amano", "img": "img/i-011.jpg", "reel": null, "entre": ""}];
@@ -3113,42 +3107,85 @@ function achats(){
     source:"saisie", photo:"", idx:i}));
   return out;
 }
+function budgetInstall(inst){
+  const paye = {}, detail = {}, reste = {}, flous = {};
+  inst.forEach(a => {
+    paye[a.poste] = (paye[a.poste] || 0) + a.montant;
+    (detail[a.poste] = detail[a.poste] || []).push(a);
+  });
+  groupes().forEach(g => g.items.forEach(it => {
+    if(it.remplace_par || estConso(it, g.titre)) return;
+    const c = coche(it.id);
+    if(c && c.prix && isFinite(nb(c.prix)) && nb(c.prix) > 0) return;   // payé : déjà compté
+    const poste = posteDe(g.titre, it.html);
+    if(c){ flous[poste] = (flous[poste] || 0) + 1; return; }            // acquis, prix non saisi
+    const r = refDe(it.id, libelle(it));
+    if(r === null || !isFinite(r)){ flous[poste] = (flous[poste] || 0) + 1; return; }
+    reste[poste] = (reste[poste] || 0) + r;
+  }));
+  const noms = POSTES.map(p => p.nom);
+  Object.keys(paye).concat(Object.keys(reste)).forEach(k => { if(noms.indexOf(k) === -1) noms.push(k); });
+  const postes = noms.map(nom => {
+    const P = POSTES.find(x => x.nom === nom);
+    const pa = paye[nom] || 0, re = reste[nom] || 0;
+    return {nom:nom, inclus:P ? P.inclus : "", paye:pa, reste:re, projete:pa + re, flous:flous[nom] || 0,
+            lignes:(detail[nom] || []).slice().sort((a,b) => (a.date || "").localeCompare(b.date || ""))};
+  }).filter(p => p.paye || p.reste || p.flous);
+  const total = postes.reduce((s,p) => ({paye:s.paye + p.paye, reste:s.reste + p.reste, flous:s.flous + p.flous}),
+                              {paye:0, reste:0, flous:0});
+  total.projete = total.paye + total.reste;
+  return {postes:postes, total:total};
+}
+function majTableauGuide(B){
+  const el = document.getElementById("tabBudgetGuide");
+  if(!el) return;
+  const c = 'style="text-align:right;white-space:nowrap"';
+  el.innerHTML = "<tr><th>Catégorie</th><th>Éléments inclus</th><th>Payé · reste · projeté</th></tr>" +
+    B.postes.map(p => "<tr><td><b>" + esc(p.nom) + "</b></td><td>" + esc(p.inclus) + "</td><td " + c + ">" +
+      eur(p.paye) + "<br>" + eur(p.reste) + "<br><b>" + eur(p.projete) + "</b></td></tr>").join("") +
+    '<tr class="tot"><td colspan="2">INVESTISSEMENT TOTAL — payé ' + eur(B.total.paye) + ", reste à acheter " +
+    eur(B.total.reste) + "</td><td " + c + "><b>" + eur(B.total.projete) + "</b></td></tr>";
+}
 function rendreBudget(){
   const A = achats();
   const inst = A.filter(a => a.nature === "install");
   const cour = A.filter(a => a.nature === "courant");
 
-  // ---- installation ----
-  const parPoste = {}, detail = {};
-  inst.forEach(a => {
-    parPoste[a.poste] = (parPoste[a.poste]||0) + a.montant;
-    (detail[a.poste] = detail[a.poste] || []).push(a);
-  });
-  let reel = 0, pmin = 0, pmax = 0;
-  const corps = POSTES.map(p => {
-    const r = parPoste[p.nom] || 0;
-    reel += r; pmin += p.min; pmax += p.max;
-    const pct = Math.min(100, p.max ? r/p.max*100 : 0);
-    const lignes = (detail[p.nom] || []).sort((a,b) => (a.date||"").localeCompare(b.date||"")).map(a =>
+  // ---- installation : payé, reste à acheter, total projeté ----
+  const B = budgetInstall(inst);
+  const t3 = (titre, v, gras) =>
+    '<div style="flex:1;min-width:96px;border:1px solid var(--trait);border-radius:8px;padding:8px 10px">' +
+    '<div style="font-size:11.5px;color:var(--encre-pale)">' + titre + '</div>' +
+    '<div class="num" style="font-size:17px;font-weight:' + (gras ? 700 : 600) + '">' + eur(v) + "</div></div>";
+  const pctG = B.total.projete ? Math.min(100, B.total.paye / B.total.projete * 100) : 0;
+  const corps = B.postes.map(p => {
+    const pct = p.projete ? Math.min(100, p.paye / p.projete * 100) : 0;
+    const lignes = p.lignes.map(a =>
       '<div class="artligne">' + (a.photo ? '<img src="' + a.photo + '" alt="">' : '<img alt="">') +
       '<div class="t2">' + esc(a.article) + "<span>" +
       [a.qte, a.ou, a.date ? frDate(a.date) : "date non renseignée"].filter(Boolean).map(esc).join(" · ") +
       '</span></div><div class="m2 num">' + eur(a.montant) + "</div></div>").join("");
-    return '<div class="poste"><div class="l1"><b>' + esc(p.nom) + '</b><span class="num">' + eur(r) +
-      '</span></div><div class="l2 num">budget prévu ' + p.min + " – " + p.max + " €" +
-      (r > p.max ? " · dépassé de " + eur(r-p.max) : (r ? " · reste " + eur(Math.max(0, p.min-r)) : "")) +
-      '</div><div class="barre"><i class="' + (r > p.max ? "depasse" : "") + '" style="width:' + pct.toFixed(0) + '%"></i></div>' +
+    return '<div class="poste"><div class="l1"><b>' + esc(p.nom) + '</b><span class="num">' + eur(p.projete) +
+      '</span></div><div class="l2 num">payé ' + eur(p.paye) + " · reste " + eur(p.reste) +
+      (p.flous ? " · " + p.flous + " article" + (p.flous > 1 ? "s" : "") + " sans prix" : "") +
+      '</div><div class="barre"><i style="width:' + pct.toFixed(0) + '%"></i></div>' +
       (lignes ? '<div style="margin-top:8px">' + lignes + "</div>" : "") + "</div>";
   }).join("");
-  const hors = Object.keys(parPoste).filter(k => !POSTES.some(p => p.nom === k));
-  const ht = hors.reduce((s,k) => s + parPoste[k], 0); reel += ht;
   $("#synthBudget").innerHTML =
-    '<p class="expli">Tout ce qui s\'achète une fois : la cuve, le sol, le décor, le matériel, les plantes et le vivant. ' +
-    'Les lignes viennent de la liste Installation et de vos saisies libres.</p>' + corps +
-    (hors.length ? '<div class="poste"><div class="l1"><b>Hors postes</b><span class="num">' + eur(ht) + "</span></div></div>" : "") +
-    '<div class="total"><b>Total installation</b><span class="num">' + eur(reel) + "</span></div>" +
-    '<div style="text-align:right;font-size:12px;color:var(--encre-pale)" class="num">budget prévu ' + pmin + " – " + pmax + " €" +
-    (reel < pmin ? " · reste environ " + eur(pmin - reel) : "") + "</div>";
+    '<p class="expli">Tout ce qui s\'achète une fois. <b>Déjà payé</b> : les prix que vous avez saisis, dans la liste ' +
+    'de courses ou en dépense libre. <b>Reste à acheter</b> : le prix de référence des articles non encore cochés. ' +
+    '<b>Total projeté</b> : ce que le bac aura coûté une fois complet. Les consommables — nourriture, ouate, ' +
+    'réactifs, engrais — ne sont pas ici mais dans Fonctionnement.</p>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px">' +
+    t3("Déjà payé", B.total.paye) + t3("Reste à acheter", B.total.reste) + t3("Total projeté", B.total.projete, true) +
+    '</div><div class="barre" style="margin-bottom:12px"><i style="width:' + pctG.toFixed(0) + '%"></i></div>' +
+    (B.total.flous ? '<p class="expli">' + B.total.flous + " article" + (B.total.flous > 1 ? "s" : "") +
+      " sans prix connu : ni payé, ni compté dans le reste.</p>" : "") +
+    corps +
+    '<div class="total"><b>Total projeté</b><span class="num">' + eur(B.total.projete) + "</span></div>" +
+    '<div style="text-align:right;font-size:12px;color:var(--encre-pale)" class="num">payé ' + eur(B.total.paye) +
+    " · reste " + eur(B.total.reste) + "</div>";
+  majTableauGuide(B);
 
   const sel = $("#dPoste");
   if(!sel.options.length) sel.innerHTML = POSTES.map(p => "<option>" + esc(p.nom) + "</option>").join("");
