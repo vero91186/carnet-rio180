@@ -2958,6 +2958,30 @@ let D = charger();
   try{ sauver(); }catch(e){}
 })();
 
+/* ---------- facture Aqua Store #F001212617005 : cuve, mallette de tests, poster ---------- */
+(function(){
+  const REF = "AQUASTORE-F001212617005", DATE = "2026-09-01", OU = "Aqua Store";
+  D.recus = D.recus || [];
+  if(D.recus.indexOf(REF) >= 0) return;
+  D.courses = D.courses || {};
+  const SUF = " \u00b7 facture Aqua Store #F001212617005 du 01/09/2026, livraison gratuite, PayPal \u2014 re\u00e7u le 09/09/2026";
+  [["c001", "499.97", "1 ensemble", "JUWEL Rio 180 Ch\u00eane Clair tout \u00e9quip\u00e9, 180 L \u2014 cuve + meuble SBX, r\u00e9f. W04850-W50118SBX"],
+   ["c010", "40.00",  "1 mallette de 6 tests",  "JBL ProAquaTest Combi Set Plus NH4 \u2014 r\u00e9f. 2409000"],
+   ["c006", "4.00",   "1 poster 100 \u00d7 50 cm", "AQUA NOVA Poster Black/Blue L, face noire \u2014 r\u00e9f. BLACK/BLUE-L"]
+  ].forEach(function(l){
+    const c = (D.courses[l[0]] && typeof D.courses[l[0]] === "object") ? D.courses[l[0]] : {};
+    c.fait = true;
+    if(!c.prix) c.prix = l[1];
+    if(!c.date) c.date = DATE;
+    if(!c.ou)   c.ou   = OU;
+    if(!c.qte)  c.qte  = l[2];
+    if(!c.note) c.note = l[3] + SUF;
+    D.courses[l[0]] = c;
+  });
+  D.recus.push(REF);
+  try{ sauver(); }catch(e){}
+})();
+
 const $ = s => document.querySelector(s);
 const auj = () => new Date().toISOString().slice(0,10);
 function frDate(iso){ if(!iso) return "—"; const p = iso.split("-"); return p[2]+"/"+p[1]+"/"+p[0].slice(2); }
