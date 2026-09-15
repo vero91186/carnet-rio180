@@ -1,6 +1,6 @@
 /* Carnet Rio 180 — service worker
    Incrémentez VERSION pour vider entièrement le cache. */
-const VERSION = "v4";
+const VERSION = "v5";
 const CACHE = "carnet-rio180-" + VERSION;
 
 // Mise en cache immédiate de la page, dès l'installation.
