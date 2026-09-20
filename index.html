@@ -74,15 +74,16 @@ h3{font-size:13px; margin:16px 0 7px; font-weight:600; color:var(--encre-pale); 
 .strate b{display:block; font-size:12px; letter-spacing:.5px; text-transform:uppercase; color:var(--encre-pale)}
 .strate span{font-size:13.5px}
 
-.grille{display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
-.p{background:var(--carte); border:1px solid var(--trait); border-radius:var(--r); padding:9px 8px; text-align:center}
-.p .lbl{font-size:11px; text-transform:uppercase; letter-spacing:.6px; color:var(--encre-pale)}
-.p .val{font-size:20px; font-weight:600; margin:2px 0 1px}
-.p .cible{font-size:11px; color:var(--encre-pale)}
-.p.ok{border-color:#BFE0C4} .p.ok .val{color:var(--mousse)}
-.p.att{border-color:#EFD9AC} .p.att .val{color:var(--ambre)}
-.p.mal{border-color:#EFC2BE; background:#FDF4F3} .p.mal .val{color:var(--alerte)}
-.p.nul .val{color:var(--encre-pale); font-size:16px}
+.grille{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
+.p{background:var(--carte); border:2px solid var(--trait); border-radius:var(--r); padding:12px 8px; text-align:center}
+.p .lbl{font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--encre-pale)}
+.p .val{font-size:28px; font-weight:800; margin:4px 0 2px; line-height:1.05}
+.p .cible{font-size:12px; color:var(--encre-pale)}
+.p.ok{border-color:var(--mousse); background:#EEF7EC} .p.ok .val{color:var(--mousse)} .p.ok .lbl{color:#3C7237}
+.p.att{border-color:var(--ambre); background:#FBF1DF} .p.att .val{color:var(--ambre)} .p.att .lbl{color:#9C6C1F}
+.p.mal{border-color:var(--alerte); background:#FBE4E2} .p.mal .val{color:var(--alerte); text-shadow:0 0 1px rgba(178,59,52,.25)} .p.mal .lbl{color:#8C2E28}
+.p.nul{background:#F1F5F5} .p.nul .val{color:var(--encre-pale); font-size:20px; font-weight:600}
+@media (max-width:380px){ .p .val{font-size:24px} }
 
 .ech{display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--trait)}
 .ech:last-child{border-bottom:0}
@@ -341,26 +342,6 @@ nav .badge{position:absolute; top:5px; right:calc(50% - 22px); min-width:16px; h
   <div class="carte" id="echeances"></div>
   <h3>Où en est le bac</h3>
   <div class="carte" id="ouEnEst"></div>
-  <h3>Le bac aujourd'hui</h3>
-  <div class="carte">
-    <div class="colonne">
-      <svg viewBox="0 0 76 190" width="76" height="190" aria-hidden="true">
-        <rect x="2" y="2" width="72" height="186" rx="5" fill="#14454E"/>
-        <rect x="2" y="2" width="72" height="16" rx="5" fill="#2F7A3D" opacity=".85"/>
-        <path d="M2 150 Q38 142 74 150 L74 183 Q74 188 69 188 L7 188 Q2 188 2 183 Z" fill="#DFCBA2"/>
-        <path d="M26 188 C30 176 38 168 48 163 C58 158 68 155 74 154 L74 188 Z" fill="#F2E8CE"/>
-        <g stroke="#3F9B52" stroke-width="3" fill="none" stroke-linecap="round">
-          <path d="M9 150 C5 122 12 96 8 66"/><path d="M17 152 C22 124 15 98 20 70"/>
-          <path d="M64 150 C60 124 67 98 62 70"/><path d="M70 152 C74 126 68 100 72 74"/></g>
-        <path d="M30 158 C40 148 50 130 58 112" stroke="#5E4028" stroke-width="5" fill="none" stroke-linecap="round"/>
-        <path d="M44 136 C52 130 58 124 62 118" stroke="#5E4028" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <g fill="#2E7D3C"><ellipse cx="38" cy="146" rx="7" ry="4"/><ellipse cx="52" cy="124" rx="6" ry="3.5"/></g>
-        <g fill="#2EC5E8"><rect x="20" y="86" width="9" height="2.4"/><rect x="40" y="98" width="9" height="2.4"/><rect x="30" y="110" width="9" height="2.4"/></g>
-        <g fill="#9A8B70"><ellipse cx="40" cy="176" rx="7" ry="2.6"/><ellipse cx="56" cy="181" rx="6" ry="2.2"/></g>
-      </svg>
-      <div class="strates" id="strates"></div>
-    </div>
-  </div>
   <h3>Dernières notes</h3>
   <div class="carte" id="dernieresNotes"></div>
 </section>
@@ -2811,7 +2792,7 @@ const MONTAGE  = [{"id": "m01", "html": "<b>La veille au plus tard — préparat
 const COURSES  = [{"titre": "CUVE ET DÉCOR", "items": [{"id": "c001", "html": "Cuve Rio 180 LED + meuble SBX"}, {"id": "c002", "html": "Sable clair 25 kg — Schicker Mineral 0,4-0,8 mm, sac de 25 kg"}, {"id": "c003", "html": "Racine araignée étalée, 55 à 60 cm d'envergure — <b>déjà acquise, bouillie et en trempage</b>"}, {"id": "c004", "html": "Pierres de lave — 1 Premium Lava Black M acquise ; une seconde de 8 à 12 cm densifierait la masse"}, {"id": "c005", "html": "Ardoises : 2 pierres plates à moussifier + 1 de calage sous la racine"}, {"id": "c006", "html": "Poster de fond noir 100 × 50 cm + scotch double face ou vaporisateur"}, {"id": "c007", "html": "Scotch repositionnable + double décimètre (repères de montage)"}, {"id": "c008", "html": "Vinaigre blanc (test des pierres <b>et du sable</b>)"}, {"id": "c009", "html": "Phare résine — déjà acquis"}]}, {"titre": "TECHNIQUE ET MESURE", "items": [{"id": "c010", "html": "Mallette de tests en gouttes (JBL Combi Set Plus <b>NH4</b>)"}, {"id": "c011", "html": "Conditionneur <b>complet</b> (Seachem Prime, JBL Biotopol)"}, {"id": "c012", "html": "Programmateur de prise"}, {"id": "c013", "html": "Thermomètre indépendant"}, {"id": "c014", "html": "Multiprise à interrupteur"}, {"id": "c015", "html": "Détecteur de fuite (facultatif)"}, {"id": "c016", "html": "Niveau à bulle"}]}, {"titre": "PLANTES ET FIXATION", "items": [{"id": "c017", "html": "4 Vallisneria spiralis"}, {"id": "c018", "html": "6 Cryptocoryne wendtii"}, {"id": "c019", "html": "3 portions de mousse de Java (généreuses)"}, {"id": "c020", "html": "2 Anubias barteri nana"}, {"id": "c021", "html": "1 à 2 fougères de Java"}, {"id": "c022", "html": "5 plantes flottantes (Limnobium)"}, {"id": "c023", "html": "Feuilles de catappa séchées"}, {"id": "c024", "html": "Sous-couche nutritive JBL AquaBasis Plus 5 L"}, {"id": "c025", "html": "Engrais racinaire en comprimés (Tetra Crypto) — en réserve, pas au démarrage"}, {"id": "c026", "html": "Pince à planter courbée 30 cm (JBL Proscape P30)"}, {"id": "c027", "html": "Engrais liquide sans cuivre"}, {"id": "c028", "html": "Fil de coton ou colle gel aquarium"}]}, {"titre": "ENTRETIEN", "items": [{"id": "c029", "html": "Siphon JBL ProClean Aqua Ex 45-70"}, {"id": "c030", "html": "Aimant à vitre"}, {"id": "c031", "html": "Épuisette"}, {"id": "c032", "html": "2 seaux de 15 L dédiés"}, {"id": "c033", "html": "Tuyau d'air (acclimatation goutte-à-goutte)"}, {"id": "c034", "html": "Ouate bioPad <b>M</b> de rechange (réf. 88049)"}, {"id": "c035", "html": "Mousse Nitrax <b>M</b> de rechange (réf. 88055)"}, {"id": "c036", "html": "Mousse bioPlus <b>M</b> à gros pores, de rechange (réf. 88050)"}, {"id": "c037", "html": "Ciseaux courbés 25 cm réservés à la taille des plantes"}, {"id": "c038", "html": "Tuyau souple 12 mm (nettoyage du filtre)"}]}, {"titre": "NOURRITURE", "items": [{"id": "c039", "html": "Micro-granulés (JBL NovoGranoMix Mini)"}, {"id": "c040", "html": "Pastilles de fond (JBL NovoTab)"}, {"id": "c041", "html": "Pastilles d'algues (Hikari Algae Wafers)"}, {"id": "c042", "html": "Artémias congelées"}]}, {"titre": "LE VIVANT — DANS CET ORDRE", "items": [{"id": "c043", "html": "S4 · 24 Neocaridina Blue Saphir (2 lots de 12, lebonaqua.fr)"}, {"id": "c044", "html": "S4 · 8 Amano (même envoi que les Neocaridina)"}, {"id": "c046", "html": "S6 · 1 Ancistrus brun"}, {"id": "c047", "html": "S6 · 3 à 5 Neritina"}, {"id": "c045", "html": "S8 · 8 Corydoras panda (élevage, Aquaplante)"}, {"id": "c048", "html": "S10 · 15 néons bleus"}, {"id": "c050", "html": "S12 · 15 Endler mâles uniquement (éleveur privé, FishFish)"}, {"id": "c049", "html": "S14 · 6 Otocinclus (achat en magasin, ventre vérifié)"}]}];
 const CAL      = [["<b>Semaines 1 à 4</b>", "Mise en eau complète, disposition des décors et plantation. Aucun animal.", "Permet d'accomplir le cycle de l'azote indispensable."], ["<b>Fin semaine 4</b>", "Introduction des 24 Neocaridina Blue Saphir et des 8 Amano, arrivées dans le même envoi, après vérification NO2 = 0.", "Elles s'approprient les mousses sans aucun stress."], ["<b>Semaine 6</b>", "Introduction de l'Ancistrus brun et des 3 à 5 Neritina.", "Prise en charge du nettoyage du sol et des vitres."], ["<b>Semaine 8</b>", "Introduction des 8 Corydoras panda.", "Le panda demande un bac installé : deux semaines de plus que le reste de l'équipe de fond."], ["<b>Semaine 10</b>", "Introduction des 15 néons bleus, achetés en une seule fois chez le même vendeur.", "Peuplement de la zone de nage intermédiaire : un banc complété plus tard se mélange mal."], ["<b>Semaine 12</b>", "Introduction des 15 Endler mâles, sexés par l'éleveur.", "Occupation du tiers supérieur, sans reproduction possible."], ["<b>Semaine 14</b>", "Introduction des 6 Otocinclus. <b>Dernière introduction : le peuplement est complet.</b>", "Ils arrivent en dernier parce qu'ils ont besoin d'un bac déjà couvert de biofilm et d'algues pour s'alimenter."]];
 const NOURRIR  = [["<b>Micro-granulés</b>", "Une pincée fine, l'équivalent d'un demi-ongle du petit doigt, une seule fois par jour.", "En journée, lumière allumée, pour les néons et les Endler — distribués en pleine eau au-dessus de la zone dégagée. Les Endler mangent en surface : donnez en deux fois plutôt qu'en une, sinon les granulés coulent avant qu'ils ne les voient. Tout doit être consommé en <b>deux minutes</b>."], ["<b>Pastilles de fond</b>", "Une pastille entière, un jour sur deux.", "À l'extinction des feux, déposée dans la zone de sable dégagée, pour les Corydoras. Les crevettes viendront la finir dans la nuit."], ["<b>Pastilles d'algues</b>", "Une demi-pastille, un jour sur deux ; une entière, les Amano en prenant leur part.", "Le soir, pour l'Ancistrus — et pour les Otocinclus dès que le bac n'a plus assez d'algues à brouter."], ["<b>Légume blanchi</b>", "Une rondelle de courgette de 1 cm, une fois par semaine.", "Pour les Otocinclus, lestée d'une fourchette ou d'une pierre. <b>Retirez-la le lendemain matin</b> : passé 24 h elle se décompose et charge l'eau."], ["<b>Artémias congelées</b>", "Un demi-cube pour tout le bac.", "Le samedi. Décongelez dans un peu d'eau du bac, puis <b>rincez dans une passoire fine et jetez le jus</b> : il est chargé en phosphates et nourrit les algues."], ["<b>Crevettes et escargots</b>", "Rien de spécifique.", "Ils vivent du biofilm, des feuilles de catappa en décomposition et des restes. Une colonie qu'on nourrit à part est une colonie qu'on surnourrit."]];
-const PANNES   = [["<b>NO2 détectable après introduction</b>", "Colonie bactérienne dépassée : population ajoutée trop vite ou filtre nettoyé trop agressivement.", "Arrêter toute nourriture 48 h, changer 20 % d'eau par jour jusqu'au retour à 0, ne rien introduire de nouveau pendant deux semaines."], ["<b>Algues filamenteuses vertes</b>", "Éclairage trop long ou excès de nitrates.", "Vérifier le programmateur (8 h strictes), retirer les filaments à la main en les enroulant sur une brosse à dents, augmenter les flottantes, réduire la nourriture."], ["<b>Eau verte ou voile blanc</b>", "Bloom bactérien du démarrage (voile) ou algues en suspension (vert).", "Le voile blanc des premières semaines disparaît seul : ne rien faire. Pour l'eau verte, occulter le bac 3 jours et changer 30 % d'eau."], ["<b>Points blancs sur les poissons</b>", "Ichtyophthirius, souvent après un coup de froid ou un ajout mal acclimaté.", "Monter la température à 28-29 °C progressivement. <b>Attention :</b> la plupart des traitements du commerce contiennent du cuivre et tueront les crevettes — vérifier l'étiquette, ou traiter en bac séparé."], ["<b>Crevettes immobiles, mortes après une mue</b>", "GH trop bas ou variation brutale après un gros changement d'eau.", "Tester le GH (viser 7-8), revenir à des changements d'eau modérés et réguliers."], ["<b>Coupure de courant</b>", "Filtre et chauffage à l'arrêt.", "Moins de 4 h : ne rien faire. Au-delà, sortir les masses filtrantes et les garder immergées dans un seau d'eau du bac. Au retour du courant, ne pas nourrir pendant 24 h."]];
+const PANNES   = [["<b>NO2 détectable après introduction</b>", "Colonie bactérienne dépassée : population ajoutée trop vite ou filtre nettoyé trop agressivement.", "Arrêter toute nourriture 48 h, changer 20 % d'eau par jour jusqu'au retour à 0, ne rien introduire de nouveau pendant deux semaines."], ["<b>Algues filamenteuses vertes</b>", "Éclairage trop long ou excès de nitrates.", "Vérifier le programmateur (8 h strictes), retirer les filaments à la main en les enroulant sur une brosse à dents, augmenter les flottantes, réduire la nourriture."], ["<b>Eau verte ou voile blanc</b>", "Bloom bactérien du démarrage (voile) ou algues en suspension (vert).", "Le voile blanc des premières semaines disparaît seul : ne rien faire. Pour l'eau verte, occulter le bac 3 jours et changer 30 % d'eau."], ["<b>Points blancs sur les poissons</b>", "Ichtyophthirius, souvent après un coup de froid ou un ajout mal acclimaté.", "Monter la température à 28-29 °C progressivement. <b>Attention :</b> la plupart des traitements du commerce contiennent du cuivre et tueront les crevettes — vérifier l'étiquette, ou traiter en bac séparé."], ["<b>Crevettes immobiles, mortes après une mue</b>", "GH trop bas ou variation brutale après un gros changement d'eau.", "Tester le GH (viser 7-8), revenir à des changements d'eau modérés et réguliers."], ["<b>Coupure de courant</b>", "Filtre et chauffage à l'arrêt.", "Moins de 4 h : ne rien faire. Au-delà, sortir les masses filtrantes et les garder immergées dans un seau d'eau du bac. Au retour du courant, ne pas nourrir pendant 24 h."], ["<b>Petits escargots auto-stoppeurs (Physes/Physelles)</b>", "Œufs arrivés sur des plantes in vitro ou en pot ; à ne pas confondre avec les Neritina prévues en semaine 6.", "Sans danger : elles mangent algues et biofilm, pas les plantes saines ni les animaux — plutôt un bon signe de démarrage du cycle. Elles se reproduisent vite si le bac est suralimenté : ne pas suralimenter, et si la population explose, les retirer à la main le soir plutôt que de traiter."]];
 const ALGUES   = [["<b>Voile blanchâtre en suspension</b>", "Jours 3 à 15", "Bloom bactérien, classique d'un bac en rodage. <b>Rien du tout</b> : il se dissipe seul. Un changement d'eau le relance."], ["<b>Dépôt brun poudreux</b>", "Semaines 3 à 8", "Diatomées. Passez l'aimant sur la vitre avant pour voir dans le bac, et laissez le reste. Les Neritina et l'Ancistrus, arrivés en semaine 6, en viennent à bout en quelques jours. C'est aussi ce dépôt qui nourrira les Otocinclus à leur arrivée : n'en éliminez pas la moindre trace avant la semaine 12."], ["<b>Voile vert sur la vitre</b>", "Dès le 2ᵉ mois", "Normal et permanent dans tout bac équilibré. Aimant chaque semaine sur les faces avant et latérales ; laissez la vitre arrière se couvrir, c'est du pâturage pour les crevettes."], ["<b>Filaments verts</b>", "À partir du 3ᵉ mois", "Le seul signal qui demande une correction : éclairage trop long ou nourriture excédentaire. Voir la section 19."], ["<b>Voile bleu-vert glissant, à odeur marquée</b>", "Rare", "Ce n'est pas une algue mais une cyanobactérie, favorisée par un coin sans courant. Retirez-la au siphon, orientez la buse vers la zone morte, réduisez la nourriture. Aucun produit : ils sont tous nocifs pour les crevettes."]];
 const MOIS     = [["<b>Mois 1</b>", "Cryptocoryne en pleine fonte, feuilles qui se liquéfient. Voile blanc dissipé. Crevettes discrètes, souvent invisibles la première semaine.", "Rien sur les Crypto : la souche est vivante. Testez chaque semaine. Ne cherchez pas les crevettes, elles sont dans la mousse."], ["<b>Mois 2</b>", "Dépôt brun de diatomées à son maximum, puis reflux après l'arrivée des Neritina et de l'Ancistrus. Corydoras panda en semaine 8, néons en semaine 10. Premiers stolons de Vallisneria.", "Aimant sur la vitre avant uniquement. Laissez la vitre arrière et les feuilles se couvrir : c'est le garde-manger des Otocinclus. Toujours pas de taille."], ["<b>Mois 3</b>", "Le bac « prend » : Vallisneria qui atteint la surface, Crypto qui repart de la souche, flottantes à doubler chaque semaine. Première femelle grainée possible.", "Premier retrait de flottantes devenu hebdomadaire. Passage aux tests tous les quinze jours si tout est stable."], ["<b>Mois 4</b>", "Premiers juvéniles de crevettes visibles sur les feuilles de catappa. Mousse qui s'épaissit. Éventuels premiers filaments verts.", "Vérifiez la durée d'éclairage avant toute autre chose. Première taille de mousse si elle dépasse 3 à 4 cm."], ["<b>Mois 5 à 6</b>", "Rideau de Vallisneria formé, colonie de crevettes qui décolle nettement, bac visuellement abouti. Le pH s'est stabilisé sous l'effet de la racine et de la catappa.", "Première grande taille (section 16), premier retrait des crevettes les moins colorées, contrôle du KH. Le peuplement, lui, est complet depuis la semaine 14 : rien à ajouter."]];
 const CHALEUR  = [["<b>Jusqu'à 27 °C</b>", "Rien d'anormal. Les poissons sont simplement plus actifs et plus voraces.", "Rien. Surveillez au thermomètre indépendant, une fois par jour."], ["<b>27 à 29 °C</b>", "L'oxygène baisse. Les néons se tiennent plus haut, l'Ancistrus sort moins la nuit.", "Galerie entrouverte, buse de sortie orientée vers la surface pour créer un remous franc, éclairage réduit à 5 ou 6 h. Nourriture divisée par deux."], ["<b>29 à 31 °C</b>", "Zone critique pour les crevettes. Poissons en surface, respiration rapide, crevettes immobiles ou au contraire agitées.", "Ventilateur de bureau soufflant <b>en rasant la surface</b> : l'évaporation fait perdre 1 à 3 °C, c'est de loin le moyen le plus efficace. Jeûne complet. Volets fermés dans la pièce."], ["<b>Au-delà de 31 °C</b>", "Mortalité possible en quelques heures, crevettes d'abord.", "Ventilateur en continu, bouteilles d'eau congelée <b>posées dans le meuble ou flottant fermées</b> — jamais de glaçons dans l'eau. Changement d'eau de 10 % avec une eau à 2 °C sous celle du bac, pas plus."]];
@@ -2963,6 +2944,95 @@ let D = charger();
   try{ sauver(); }catch(e){}
 })();
 
+/* ---------- relevé du 16/09/2026 (mise en eau) : injection unique, jamais rejouée ---------- */
+(function(){
+  const REF = "TEST-2026-09-16", DATE = "2026-09-16";
+  D.recus = D.recus || [];
+  if(D.recus.indexOf(REF) >= 0) return;
+  D.releves = D.releves || [];
+  if(!D.releves.some(function(r){ return r.date === DATE; })){
+    D.releves.push({
+      date: DATE, ph:"", gh:"", kh:"", no2:"", no3:"", temp:"", chgt:0,
+      note:"Mise en eau (Prime dosé au remplissage)."
+    });
+    D.releves.sort(function(a,b){ return a.date.localeCompare(b.date); });
+  }
+  D.recus.push(REF);
+  try{ sauver(); }catch(e){}
+})();
+
+/* ---------- relevé du 19/09/2026 (J+3) : injection unique, jamais rejouée ---------- */
+(function(){
+  const REF = "TEST-2026-09-19", DATE = "2026-09-19";
+  D.recus = D.recus || [];
+  if(D.recus.indexOf(REF) >= 0) return;
+  D.releves = D.releves || [];
+  if(!D.releves.some(function(r){ return r.date === DATE; })){
+    D.releves.push({
+      date: DATE, ph:"", gh:"", kh:"9", no2:"0", no3:"0", temp:"25", chgt:0,
+      note:"Premiers tests d'eau à J+3 (mallette JBL ProAquaTest Combi Set Plus NH4, sans test GH séparé) : pH entre 7 et 7,5, KH 9 °dKH, NH4 < 0,05 mg/L, NO2 < 0,01 mg/L, NO3 < 0,05 mg/L, 25 °C — cohérent avec un tout début de cycle (KH nettement plus élevé que le KH 3 du robinet avant montage, probablement lié au substrat/ardoises/lave)."
+    });
+    D.releves.sort(function(a,b){ return a.date.localeCompare(b.date); });
+    D.taches = D.taches || [];
+    const tt = D.taches.find(function(x){ return x.nom === "Test des paramètres"; });
+    if(tt) tt.fait = DATE;
+    D.journal = D.journal || [];
+    D.journal.push({date:DATE, texte:"Premiers tests d'eau à J+3 : pH 7-7,5, KH 9, NH4 < 0,05, NO2 < 0,01, NO3 < 0,05, 25 °C — début de cycle."});
+  }
+  D.recus.push(REF);
+  try{ sauver(); }catch(e){}
+})();
+
+/* ---------- correctif : ajout de la température au relevé du 19/09 (injection unique) ---------- */
+(function(){
+  const REF = "TEST-2026-09-19-TEMP", DATE = "2026-09-19";
+  D.recus = D.recus || [];
+  if(D.recus.indexOf(REF) >= 0) return;
+  D.releves = D.releves || [];
+  const r = D.releves.find(function(x){ return x.date === DATE; });
+  if(r){
+    r.temp = "25";
+    if(r.note && r.note.indexOf("25 °C") < 0) r.note = r.note.replace("NO3 < 0,05 mg/L", "NO3 < 0,05 mg/L, 25 °C");
+  }
+  D.recus.push(REF);
+  try{ sauver(); }catch(e){}
+})();
+
+/* ---------- correctif : ajout du pH au relevé du 19/09 (injection unique) ---------- */
+(function(){
+  const REF = "TEST-2026-09-19-PH", DATE = "2026-09-19";
+  D.recus = D.recus || [];
+  if(D.recus.indexOf(REF) >= 0) return;
+  D.releves = D.releves || [];
+  const r = D.releves.find(function(x){ return x.date === DATE; });
+  if(r) r.ph = "7.2";
+  D.recus.push(REF);
+  try{ sauver(); }catch(e){}
+})();
+
+/* ---------- observation du 19/09/2026 : deux escargots auto-stoppeurs (injection unique) ---------- */
+(function(){
+  const REF = "OBS-2026-09-19-ESCARGOTS", DATE = "2026-09-19";
+  D.recus = D.recus || [];
+  if(D.recus.indexOf(REF) >= 0) return;
+  D.journal = D.journal || [];
+  D.journal.push({date:DATE, texte:"Présence de deux petits escargots auto-stoppeurs sur la vitre et les plantes (arrivés avec les plantes in vitro) — à distinguer des Neritina prévues en semaine 6."});
+  D.journal.push({date:DATE, texte:"Aucun risque : ce sont probablement des Physes/Physelles, sans danger pour plantes ou animaux, plutôt bon signe du démarrage du cycle. Seul risque : prolifération si le bac est suralimenté — voir dépannage."});
+  D.recus.push(REF);
+  try{ sauver(); }catch(e){}
+})();
+
+/* ---------- correctif : date de mise en eau (injection unique) ---------- */
+(function(){
+  const REF = "MISE-EN-EAU-2026-09-16";
+  D.recus = D.recus || [];
+  if(D.recus.indexOf(REF) >= 0) return;
+  D.reglages = D.reglages || {};
+  if(!D.reglages.miseEnEau) D.reglages.miseEnEau = "2026-09-16";
+  D.recus.push(REF);
+  try{ sauver(); }catch(e){}
+})();
+
 const $ = s => document.querySelector(s);
 const auj = () => new Date().toISOString().slice(0,10);
 function frDate(iso){ if(!iso) return "—"; const p = iso.split("-"); return p[2]+"/"+p[1]+"/"+p[0].slice(2); }
@@ -3057,15 +3127,6 @@ function rendreBord(){
   }).sort((a,b) => a.ordre - b.ordre).slice(0,5).map(x => x.html).join("") +
     (D.taches.length > 5 ? '<p class="vide" style="padding-top:8px">Les ' + (D.taches.length-5) + " autres tâches sont dans Entretien.</p>" : "")
     : '<p class="vide">Aucune tâche enregistrée.</p>';
-
-  const parStrate = {};
-  D.population.forEach(p => {
-    const n = (p.reel != null && p.reel !== "") ? Number(p.reel) : null;
-    (parStrate[p.strate] = parStrate[p.strate] || []).push(p.nom + " " + (n != null ? "×"+n : "("+p.prevu+" prévus)"));
-  });
-  $("#strates").innerHTML = ["Surface","Pleine eau","Feuilles et vitres","Fond"].filter(s => parStrate[s])
-    .map(s => '<div class="strate"><b>' + s + "</b><span>" + esc(parStrate[s].join(", ")) + "</span></div>").join("")
-    || '<p class="vide">Aucune espèce enregistrée.</p>';
 
   const notes = D.journal.slice(-3).reverse();
   $("#dernieresNotes").innerHTML = notes.length
