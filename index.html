@@ -117,6 +117,28 @@ tr:last-child td{border-bottom:0}
 td.r,th.r{text-align:right; padding-right:0}
 .hors{color:var(--alerte); font-weight:600}
 
+/* simulateur de densité */
+.sim-ent,.sim-lig{display:grid; grid-template-columns:1fr 62px 104px 26px; gap:6px; align-items:center}
+.sim-ent{font-size:11px; text-transform:uppercase; letter-spacing:.6px; color:var(--encre-pale); font-weight:600; padding-bottom:4px; border-bottom:1px solid var(--trait)}
+.sim-lig{padding:6px 0; border-bottom:1px solid var(--trait)}
+.sim-lig:last-of-type{border-bottom:0}
+.sim-lig .nom{font-size:13.5px; line-height:1.25}
+.sim-lig .nom small{display:block; font-size:11.5px; color:var(--encre-pale)}
+.sim-lig input{padding:6px 6px; text-align:center}
+.sim-pas{display:grid; grid-template-columns:30px 1fr 30px; gap:3px}
+.sim-pas button{padding:0; height:34px; background:#fff; color:var(--eau); border:1px solid var(--trait); font-size:17px; line-height:1}
+.sim-pas input{min-width:0}
+.sim-lig .bmini{padding:0; font-size:17px; text-align:center}
+.jauge{position:relative; height:12px; border-radius:6px; margin:16px 0 4px; overflow:visible;
+  background:linear-gradient(90deg,var(--mousse) 0 40%,var(--eau-clair) 40% 60%,var(--ambre) 60% 80%,var(--alerte) 80% 100%)}
+.jauge i{position:absolute; top:-5px; width:4px; height:22px; background:var(--encre); border-radius:2px; transform:translateX(-2px); transition:left .2s}
+.jauge-ech{position:relative; height:14px; font-size:11px; color:var(--encre-pale)}
+.jauge-ech span{position:absolute; transform:translateX(-50%)}
+.sim-vague{display:grid; grid-template-columns:34px 1fr 54px; gap:8px; align-items:center; padding:5px 0; font-size:12.5px}
+.sim-vague .bar{height:7px; background:var(--trait); border-radius:4px; overflow:hidden; margin-top:3px}
+.sim-vague .bar b{display:block; height:100%; background:var(--eau-clair)}
+details.sim-ajout{margin-top:10px; border-top:1px solid var(--trait); padding-top:8px}
+details.sim-ajout summary{cursor:pointer; font-size:13px; color:var(--eau); font-weight:500}
 .courbe{margin-bottom:14px}
 .courbe .tete{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:2px}
 .courbe .tete b{font-size:13.5px; font-weight:600}
@@ -2567,12 +2589,15 @@ nav .badge{position:absolute; top:5px; right:calc(50% - 22px); min-width:16px; h
   <h2>Réglages et données</h2>
   <div class="carte">
     <div class="champ"><label for="rMiseEnEau">Date de mise en eau</label><input type="date" id="rMiseEnEau"></div>
-    <div class="deux">
-      <div class="champ"><label for="rVolume">Volume réel (L)</label><input type="number" id="rVolume"></div>
-      <div class="champ"><label for="rChgt">Changement d'eau (L)</label><input type="number" id="rChgt"></div>
+    <div class="trois">
+      <div class="champ"><label for="rBrut">Volume brut (L)</label><input type="number" id="rBrut" inputmode="decimal"></div>
+      <div class="champ"><label for="rVolume">Volume réel (L)</label><input type="number" id="rVolume" inputmode="decimal"></div>
+      <div class="champ"><label for="rChgt">Chgt d'eau (L)</label><input type="number" id="rChgt" inputmode="decimal"></div>
     </div>
     <button class="bp" id="bReglages">Enregistrer</button>
   </div>
+  <h3>Simulateur de densité</h3>
+  <div class="carte" id="simu"></div>
   <h3>Le bac tel qu'il est livré</h3>
   <div class="carte" id="kit"></div>
   <h3>Sécurité électrique — à vérifier une fois</h3>
@@ -2713,8 +2738,21 @@ const TACHES_INIT = [
   {nom:"Turbine de la pompe",            periode:365, fait:"", aide:13}
 ];
 
+const SIMU_DEBIT = 600;      // Eccoflow 600, en L/h
+const SIMU_COEF_INV = 0.3;   // un invertébré pèse ~30 % d'un poisson de même longueur
+const SIMU_INIT = [
+  {id:"neon", nom:"Néons bleus",            cm:3,   n:30, t:"p", sem:8},
+  {id:"cory", nom:"Corydoras sterbai",      cm:6.5, n:8,  t:"p", sem:6},
+  {id:"oto",  nom:"Otocinclus",             cm:3.5, n:6,  t:"p", sem:12},
+  {id:"anci", nom:"Ancistrus",              cm:12,  n:1,  t:"p", sem:6},
+  {id:"neri", nom:"Neritina",               cm:2.5, n:4,  t:"i", sem:6},
+  {id:"cher", nom:"Neocaridina Red Cherry", cm:2.5, n:20, t:"i", sem:4},
+  {id:"aman", nom:"Crevettes Amano",        cm:4,   n:8,  t:"i", sem:5}
+];
+
 function vide(){
-  return {reglages:{miseEnEau:"", volume:150, chgt:45},
+  return {reglages:{miseEnEau:"", brut:180, volume:150, chgt:45},
+    simu:{lignes:JSON.parse(JSON.stringify(SIMU_INIT))},
     releves:[], population:JSON.parse(JSON.stringify(POP_INIT)),
     depenses:[], taches:JSON.parse(JSON.stringify(TACHES_INIT)), journal:[],
     montage:{}, courses:{}, eau:{}, securite:{}, perso:[], ref:{}, renom:{}, conso:{}};
@@ -3055,7 +3093,7 @@ function rendrePop(){
       '<button class="bmini sup" data-sup-pop="' + i + '">×</button></div></div></div>';
   }).join("") || '<p class="vide">Aucune espèce.</p>';
 
-  $("#listePlantes").innerHTML = PLANTES.map(p =>
+  $("#listePlantes").innerHTML = (typeof PLANTES === "undefined" ? [] : PLANTES).map(p =>
     '<div class="esp">' + (p.img ? '<img src="' + p.img + '" alt="">' : '<img alt="">') +
     '<div class="co"><div class="e1"><b>' + esc(p.nom) + '</b>' +
     '<button class="bmini" data-fiche="' + esc(p.ancre) + '" data-sect="5">Fiche</button></div>' +
@@ -3332,10 +3370,11 @@ function rendreEntretien(){
       '<button class="bmini sup" data-sup-tache="' + i + '">×</button><br><span class="num">' + quand + "</span></div></div>";
   }).join("") : '<p class="vide">Aucune tâche.</p>';
 
-  const n = MONTAGE.filter(e => D.montage[e.id]).length;
-  $("#avanceMontage").textContent = n + " étape" + (n>1?"s":"") + " sur " + MONTAGE.length + " faite" + (n>1?"s":"") +
-    (n === MONTAGE.length ? " — le bac est monté." : "");
-  $("#listeMontage").innerHTML = MONTAGE.map((e,i) =>
+  const MONT = typeof MONTAGE === "undefined" ? [] : MONTAGE;
+  const n = MONT.filter(e => D.montage[e.id]).length;
+  $("#avanceMontage").textContent = n + " étape" + (n>1?"s":"") + " sur " + MONT.length + " faite" + (n>1?"s":"") +
+    (n === MONT.length ? " — le bac est monté." : "");
+  $("#listeMontage").innerHTML = MONT.map((e,i) =>
     '<div class="etape' + (D.montage[e.id] ? " fait" : "") + '"><label class="t">' +
     '<input type="checkbox" data-montage="' + e.id + '"' + (D.montage[e.id] ? " checked" : "") + ">" +
     '<span class="n num">' + (i+1) + '</span><span class="c">' + e.html + "</span></label></div>").join("");
@@ -3360,11 +3399,123 @@ $("#bAjoutNote").addEventListener("click", () => {
   D.journal.push({date:auj(), texte:t}); sauver(); $("#jNote").value = ""; tout();
 });
 
+/* ---------- simulateur de densité ---------- */
+function nf(x, d){ return x.toLocaleString("fr-FR", {minimumFractionDigits:d, maximumFractionDigits:d}); }
+function simuVolumes(){
+  return {net: Number($("#rVolume").value) || Number(D.reglages.volume) || 150,
+          brut: Number($("#rBrut").value) || Number(D.reglages.brut) || 180};
+}
+function simuCharge(lignes){
+  let poi = 0, inv = 0, nP = 0, nI = 0;
+  lignes.forEach(l => {
+    const n = Number(l.n) || 0, t = (Number(l.cm) || 0) * n;
+    if(l.t === "p"){ poi += t; nP += n; } else { inv += t * SIMU_COEF_INV; nI += n; }
+  });
+  return {poi:poi, inv:inv, tot:poi + inv, nP:nP, nI:nI};
+}
+function simuNiveau(r){
+  if(r < 1)   return {cl:"ok",  nom:"Aéré",        txt:"Bac aéré : large marge, même pour un ajout ou une casse de filtre passagère."};
+  if(r < 1.5) return {cl:"ok",  nom:"Raisonnable", txt:"Densité raisonnable pour un bac planté et bien filtré. Introduisez les animaux par vagues pour laisser la filtration suivre."};
+  if(r < 2)   return {cl:"att", nom:"Chargé",      txt:"Bac chargé : changements d'eau plus fréquents, nitrates à surveiller, aucun ajout. Retirer quelques animaux redonne de la marge."};
+  return        {cl:"att", nom:"Surcharge",   txt:"Surcharge probable : réduisez la population ou visez un plus grand volume avant d'aller plus loin."};
+}
+function rendreSimu(){
+  const L = D.simu.lignes;
+  $("#simu").innerHTML =
+    "<div class='sim-ent'><span>Espèce</span><span style='text-align:center'>Taille cm</span><span style='text-align:center'>Nombre</span><span></span></div>" +
+    L.map((l, i) =>
+      "<div class='sim-lig'><div class='nom'>" + esc(l.nom) + "<small>" +
+        (l.t === "p" ? "poisson" : "invertébré (×" + nf(SIMU_COEF_INV, 1) + ")") + (l.sem ? " · S" + l.sem : "") + "</small></div>" +
+      "<input type='number' inputmode='decimal' step='0.5' min='0' value='" + esc(l.cm) + "' data-i='" + i + "' data-k='cm' aria-label='Taille adulte de " + esc(l.nom) + "'>" +
+      "<div class='sim-pas'><button data-i='" + i + "' data-pas='-1' aria-label='Retirer un'>&minus;</button>" +
+        "<input type='number' inputmode='numeric' min='0' value='" + esc(l.n) + "' data-i='" + i + "' data-k='n' aria-label='Nombre de " + esc(l.nom) + "'>" +
+        "<button data-i='" + i + "' data-pas='1' aria-label='Ajouter un'>+</button></div>" +
+      "<button class='bmini sup' data-sup='" + i + "' aria-label='Supprimer " + esc(l.nom) + "'>&times;</button></div>").join("") +
+    "<details class='sim-ajout'><summary>Ajouter une espèce</summary>" +
+      "<div class='champ' style='margin-top:8px'><label for='sNom'>Nom</label><input id='sNom' type='text'></div>" +
+      "<div class='trois'><div class='champ'><label for='sCm'>Taille cm</label><input id='sCm' type='number' step='0.5' inputmode='decimal'></div>" +
+      "<div class='champ'><label for='sN'>Nombre</label><input id='sN' type='number' inputmode='numeric'></div>" +
+      "<div class='champ'><label for='sT'>Type</label><select id='sT'><option value='p'>Poisson</option><option value='i'>Invertébré</option></select></div></div>" +
+      "<button class='bs' id='bSimuAjout' style='width:100%'>Ajouter</button></details>" +
+    "<div id='simuRes' style='margin-top:14px'></div>" +
+    "<div class='lignebtn'><button class='bs' id='bSimuRaz' style='flex:1'>Revenir à la population arrêtée</button></div>";
+  majSimu();
+}
+function majSimu(){
+  if(!$("#simuRes")) return;
+  const v = simuVolumes(), c = simuCharge(D.simu.lignes);
+  const rNet = c.tot / v.net, rBrut = c.tot / v.brut, rPoi = c.poi / v.net;
+  const niv = simuNiveau(rNet), echange = SIMU_DEBIT / v.net;
+  const marge = 1.5 * v.net - c.tot, volMini = c.tot / 1.5;
+  const classeTuile = rNet < 1.5 ? "ok" : (rNet < 2 ? "att" : "mal");
+  const nTot = c.nP + c.nI, lParAnimal = nTot ? v.net / nTot : 0;
+  const pos = Math.min(rNet / 2.5, 1) * 100;
+  // vagues d'introduction (cumul par semaine)
+  const sems = Array.from(new Set(D.simu.lignes.filter(l => l.sem).map(l => l.sem))).sort((a, b) => a - b);
+  const vagues = sems.map(sm => {
+    const cum = simuCharge(D.simu.lignes.filter(l => l.sem && l.sem <= sm)).tot / v.net;
+    const noms = D.simu.lignes.filter(l => l.sem === sm && Number(l.n) > 0).map(l => l.n + " " + l.nom);
+    return "<div class='sim-vague'><b>S" + sm + "</b><div>" + esc(noms.join(", ") || "—") +
+      "<div class='bar'><b style='width:" + Math.min(cum / 2.5, 1) * 100 + "%'></b></div></div>" +
+      "<span class='num r'>" + nf(cum, 2) + "</span></div>";
+  }).join("");
+  $("#simuRes").innerHTML =
+    "<div class='grille'>" +
+      "<div class='p " + classeTuile + "'><div class='lbl'>cm / L réel</div><div class='val num'>" + nf(rNet, 2) + "</div><div class='cible'>" + niv.nom + "</div></div>" +
+      "<div class='p nul'><div class='lbl'>cm / L brut</div><div class='val num'>" + nf(rBrut, 2) + "</div><div class='cible'>sur " + nf(v.brut, 0) + " L</div></div>" +
+      "<div class='p nul'><div class='lbl'>L par animal</div><div class='val num'>" + (nTot ? nf(lParAnimal, 1) : "—") + "</div><div class='cible'>" + nTot + " animaux</div></div>" +
+    "</div>" +
+    "<div class='jauge'><i style='left:" + pos + "%'></i></div>" +
+    "<div class='jauge-ech'><span style='left:40%'>1</span><span style='left:60%'>1,5</span><span style='left:80%'>2</span></div>" +
+    "<div class='verdict " + niv.cl + "' style='margin-top:6px'>" + niv.txt +
+      (echange < 3 ? " Brassage du filtre juste (" + nf(echange, 1) + " × le volume par heure) : visez au moins 3 ×." : "") + "</div>" +
+    "<table style='margin-bottom:6px'>" +
+      "<tr><td>Poissons seuls</td><td class='num r'>" + nf(c.poi, 0) + " cm · " + nf(rPoi, 2) + " cm/L</td></tr>" +
+      "<tr><td>Invertébrés (équivalent)</td><td class='num r'>" + nf(c.inv, 0) + " cm</td></tr>" +
+      "<tr><td>Charge totale</td><td class='num r'>" + nf(c.tot, 0) + " cm</td></tr>" +
+      "<tr><td>Brassage du filtre</td><td class='num r'>" + nf(echange, 1) + " × / heure</td></tr>" +
+      "<tr><td>" + (marge >= 0 ? "Marge avant 1,5 cm/L" : "Dépassement de 1,5 cm/L") + "</td><td class='num r'>" + nf(Math.abs(marge), 0) + " cm</td></tr>" +
+      "<tr><td>Volume réel pour rester à 1,5</td><td class='num r'>" + nf(volMini, 0) + " L</td></tr></table>" +
+    (vagues ? "<h3 style='margin-top:14px'>Densité cumulée par vague (cm/L réel)</h3>" + vagues : "") +
+    "<p style='margin:10px 0 0; font-size:12px; color:var(--encre-pale)'>Repère indicatif : tailles adultes, volume réel du bac, un invertébré compté à " +
+      Math.round(SIMU_COEF_INV * 100) + " % d'un poisson de même longueur. Seuils : 1 aéré · 1,5 limite raisonnable en bac planté · 2 surcharge. " +
+      "La règle du cm par litre ne remplace ni les tests ni l'observation.</p>";
+}
+$("#simu").addEventListener("input", e => {
+  const t = e.target, i = t.dataset.i, k = t.dataset.k;
+  if(i === undefined || !k) return;
+  D.simu.lignes[i][k] = Math.max(0, Number(t.value) || 0);
+  sauver(); majSimu();
+});
+$("#simu").addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b) return;
+  if(b.dataset.pas){
+    const l = D.simu.lignes[b.dataset.i];
+    l.n = Math.max(0, (Number(l.n) || 0) + Number(b.dataset.pas));
+    sauver(); rendreSimu();
+  } else if(b.dataset.sup !== undefined){
+    const l = D.simu.lignes[b.dataset.sup];
+    if(confirm("Retirer « " + l.nom + " » du simulateur ?")){ D.simu.lignes.splice(b.dataset.sup, 1); sauver(); rendreSimu(); }
+  } else if(b.id === "bSimuAjout"){
+    const nom = $("#sNom").value.trim(), cm = Number($("#sCm").value), n = Number($("#sN").value);
+    if(!nom || !(cm > 0)){ alert("Indiquez au moins un nom et une taille adulte."); return; }
+    D.simu.lignes.push({id:"u" + Date.now(), nom:nom, cm:cm, n:Math.max(0, n || 0), t:$("#sT").value});
+    sauver(); rendreSimu();
+  } else if(b.id === "bSimuRaz"){
+    if(confirm("Remplacer le tableau par la population arrêtée ?")){
+      D.simu.lignes = JSON.parse(JSON.stringify(SIMU_INIT)); sauver(); rendreSimu();
+    }
+  }
+});
+["#rVolume", "#rBrut"].forEach(sel => $(sel).addEventListener("input", majSimu));
+
 /* ---------- réglages ---------- */
 function rendreDonnees(){
   $("#rMiseEnEau").value = D.reglages.miseEnEau || "";
+  $("#rBrut").value = D.reglages.brut;
   $("#rVolume").value = D.reglages.volume;
   $("#rChgt").value = D.reglages.chgt;
+  rendreSimu();
   $("#listeSeuils").innerHTML = "<table><tr><th>Paramètre</th><th class='r'>Cible</th><th class='r'>Alerte hors</th></tr>" +
     SEUILS.map(s => "<tr><td>" + s.nom + "</td><td class='num r'>" +
       (s.min === s.max ? s.min : s.min + " – " + s.max) + " " + s.unite +
@@ -3372,6 +3523,7 @@ function rendreDonnees(){
 }
 $("#bReglages").addEventListener("click", () => {
   D.reglages.miseEnEau = $("#rMiseEnEau").value;
+  D.reglages.brut = Number($("#rBrut").value) || 180;
   D.reglages.volume = Number($("#rVolume").value) || 150;
   D.reglages.chgt = Number($("#rChgt").value) || 45;
   sauver(); tout(); ouvrir("bord");
